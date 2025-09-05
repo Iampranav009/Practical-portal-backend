@@ -196,7 +196,7 @@ const ShaderBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    let startTime = Date.now();
+    const startTime = Date.now();
     const render = () => {
       const currentTime = (Date.now() - startTime) / 1000;
 

@@ -100,10 +100,10 @@ export function TeacherReviewFeed({ batchId, onSubmissionUpdated }: TeacherRevie
       )
     }
 
-    const handleSubmissionDeleted = (data: any) => {
+    const handleSubmissionDeleted = (data: { submission_id: number }) => {
       console.log('Submission deleted:', data)
       setSubmissions(prev =>
-        prev.filter(submission => submission.submission_id !== data.submissionId)
+        prev.filter(submission => submission.submission_id !== data.submission_id)
       )
     }
 

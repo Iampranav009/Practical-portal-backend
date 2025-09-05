@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const dashboardPath = userWithRole.role === 'teacher' ? '/teachers/dashboard' : '/students/my-batches'
               window.location.href = dashboardPath
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             // User not found in backend, might need to register
             console.warn('User not found in backend, redirecting to registration')
             setUser(null)

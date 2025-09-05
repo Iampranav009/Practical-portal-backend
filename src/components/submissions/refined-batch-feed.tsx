@@ -99,13 +99,13 @@ export function RefinedBatchFeed({ batchId, refreshTrigger, onEditPost }: Refine
   useEffect(() => {
     if (!socket) return
 
-    const handleSubmissionCreated = (data: any) => {
+    const handleSubmissionCreated = (data: { submission: any }) => {
       console.log('New submission received:', data)
       const newPost = convertSubmissionToPost(data.submission)
       setPosts(prev => [newPost, ...prev])
     }
 
-    const handleSubmissionUpdated = (data: any) => {
+    const handleSubmissionUpdated = (data: { submission: any }) => {
       console.log('Submission updated:', data)
       const updatedPost = convertSubmissionToPost(data.submission)
       setPosts(prev =>
@@ -136,7 +136,28 @@ export function RefinedBatchFeed({ batchId, refreshTrigger, onEditPost }: Refine
   /**
    * Convert submission data to post format
    */
-  const convertSubmissionToPost = (submission: any): PostData => {
+  const convertSubmissionToPost = (submission: {
+    submission_id: number;
+    content: string;
+    file_path?: string;
+    file_url?: string;
+    file_type?: string;
+    code_language?: string;
+    created_at: string;
+    student_name: string;
+    student_email: string;
+    profile_picture_url?: string;
+    student_roll_number?: string;
+    student_year?: string;
+    student_subject?: string;
+    status?: string;
+    practical_name?: string;
+    code_sandbox_link?: string;
+    user: {
+      name: string;
+      profile_picture?: string;
+    };
+  }): PostData => {
     // Determine content type based on submission data
     let contentType: 'text' | 'image' | 'code' = 'text'
     let contentData = submission.content
@@ -185,8 +206,8 @@ export function RefinedBatchFeed({ batchId, refreshTrigger, onEditPost }: Refine
         likes: 0, // Can be enhanced with actual like system
         shares: 0
       },
-      status: submission.status,
-      practical_name: submission.practical_name,
+      status: (submission.status as 'pending' | 'accepted' | 'rejected') || 'pending',
+      practical_name: submission.practical_name || 'Practical Assignment',
       file_url: submission.file_url,
       code_sandbox_link: submission.code_sandbox_link
     }

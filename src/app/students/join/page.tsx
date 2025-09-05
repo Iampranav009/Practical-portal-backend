@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SidebarLayout } from '@/components/layout/sidebar-layout'
@@ -37,7 +37,8 @@ interface JoinFormData {
   password: string
 }
 
-export default function StudentJoinBatchPage() {
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+function JoinFormContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -375,5 +376,21 @@ export default function StudentJoinBatchPage() {
         </div>
       </div>
     </SidebarLayout>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function StudentJoinBatchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <JoinFormContent />
+    </Suspense>
   )
 }

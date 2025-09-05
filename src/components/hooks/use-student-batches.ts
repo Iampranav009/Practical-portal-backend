@@ -97,7 +97,13 @@ export function useStudentBatches() {
       if (response.ok) {
         const data = await response.json()
         // Transform data to only include fields needed for sidebar
-        const sidebarBatches: SidebarBatch[] = (data.data || []).map((batch: any) => ({
+        const sidebarBatches: SidebarBatch[] = (data.data || []).map((batch: {
+          batch_id: number;
+          name: string;
+          teacher_name: string;
+          icon_image: string;
+          college_name: string;
+        }) => ({
           batch_id: batch.batch_id,
           name: batch.name,
           teacher_name: batch.teacher_name,
