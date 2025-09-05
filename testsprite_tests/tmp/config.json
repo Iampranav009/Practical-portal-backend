@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "pranavshinde559@gmail.com",
+  "loginPassword": "123456",
+  "executionArgs": {
+    "projectName": "practical-portal",
+    "projectPath": "D:\\my files\\mylasttry\\practical portal\\practical-portal",
+    "testIds": [],
+    "additionalInstruction": "Focus on identifying bugs, errors, and potential issues in the codebase. Test authentication flows, API integrations, component rendering, and database operations.",
+    "envs": {
+      "API_KEY": "sk-user-qdfIhnJ3fY6hFETbmRDDRxx33Z3GtSeF57BipNd8urUnVS2K3IZEPUyXFXlG3I4QpCv0mqMcOY813UIoPyHaSkNTEBlwY0fXUrQT3EjbhV58tl1McK87jC8C-pwv_LBL5-k"
+    }
+  },
+  "proxy": "http://d7e86a13-6663-4bac-8fba-e8c80c9d1554:SOOZkeBhLalqWs5NXEEHdeO73MdqJsJ3@tun.testsprite.com:8080"
+}

@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "project": "Practical Portal (PlayWeb)",
+    "date": "2025-09-03",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "Practical Portal (PlayWeb) is a full-stack web application designed to facilitate practical coursework management for students and teachers. It provides role-based access, batch/classroom management, submission handling with real-time updates, and responsive dashboards to enhance the educational experience.",
+  "core_goals": [
+    "Provide seamless and secure authentication with Firebase for students and teachers.",
+    "Enable teachers to create, manage, and share classroom batches with controlled student access.",
+    "Allow students to join batches easily via secure shareable links and passwords.",
+    "Implement an interactive feed system for batch-specific and exploratory practical submissions.",
+    "Allow teachers to review, accept, or reject student submissions with real-time status updates.",
+    "Deliver role-specific dashboards that aggregate relevant batch and submission information.",
+    "Ensure a mobile-first, responsive, and modern UI design using TailwindCSS and shadcn/ui components."
+  ],
+  "key_features": [
+    "Firebase-based authentication system with JWT management and role-based login flows.",
+    "Profile management pages tailored to student and teacher roles with editable fields and image upload.",
+    "Batch management for teachers including create, edit, delete operations with password protection and shareable invite links.",
+    "Student batch joining workflow secured by batch passwords and membership tracking in the database.",
+    "Submission system allowing students to post text and file attachments, and teachers to review and update submission status.",
+    "Real-time communication using Socket.IO for submission status updates and notifications.",
+    "Role-based dashboards for teachers and students showcasing batches, submissions, and feeds.",
+    "Comprehensive navigation system with responsive sidebar and active page indicators.",
+    "Robust API routes underpinning frontend-backend communication with validation and security.",
+    "MySQL database setup with schema for users, batches, members, and submissions.",
+    "Input validation, sanitization, rate limiting, and security middleware to protect APIs.",
+    "File upload functionality for profile pictures and submission attachments with backend integration."
+  ],
+  "user_flow_summary": [
+    "User visits Landing Page, registers or logs in via Firebase authentication.",
+    "Teacher logs in and accesses Teacher Dashboard to create and manage batches/classes.",
+    "Teacher creates a batch with details and password, then shares the invite link and password with students.",
+    "Student signs in and uses the provided link and password to join a batch.",
+    "Students access their dashboard to view joined batches, batch feeds, and submit practical assignments.",
+    "Students create submissions with optional file attachments which are visible in batch feeds.",
+    "Teachers view submissions in their dashboard and accept or reject with status updates sent real-time to students.",
+    "Users can update their profile information and upload profile images.",
+    "Both roles navigate the responsive UI with role-based access control restricting features appropriately.",
+    "Explore Feed allows users to browse public batch submissions with search and filter capabilities."
+  ],
+  "validation_criteria": [
+    "All authentication flows verify Firebase tokens and enforce role-based access.",
+    "Batch creation includes mandatory fields with validation and unique passwords.",
+    "Batch joining requires correct password validation and confirmed membership insertion in DB.",
+    "Submission creation validates text and file attachment types and sizes.",
+    "Real-time updates via Socket.IO are tested for reliability and correctness.",
+    "Dashboards accurately display user-role relevant data and updates.",
+    "API endpoints return appropriate success and error responses with consistent structure.",
+    "UI adapts correctly on multiple screen sizes and passes usability tests.",
+    "Security features like input sanitization, rate limiting, and secure headers are enforced on all routes.",
+    "File uploads process correctly with accessible URLs and storage error handling."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "JavaScript",
+      "TypeScript",
+      "Next.js",
+      "React",
+      "Express.js",
+      "Node.js",
+      "MySQL",
+      "Firebase",
+      "Socket.IO",
+      "TailwindCSS",
+      "shadcn/ui"
+    ],
+    "features": [
+      {
+        "name": "Authentication System",
+        "description": "Firebase-based authentication with role-based access control for students and teachers, JWT token management, and user registration",
+        "files": [
+          "src/contexts/auth-context.tsx",
+          "src/lib/firebase.ts",
+          "src/components/auth/login-form.tsx",
+          "src/components/auth/signup-form.tsx",
+          "src/components/auth/signin-flow.tsx",
+          "src/components/auth/signup-flow.tsx",
+          "backend/controllers/authController.js",
+          "backend/routes/auth.js",
+          "backend/middleware/auth.js"
+        ]
+      },
+      {
+        "name": "Profile Management",
+        "description": "Role-specific profile pages for students and teachers with editable information, profile pictures, and form validation",
+        "files": [
+          "src/app/students/profile/page.tsx",
+          "src/app/teachers/profile/page.tsx",
+          "backend/controllers/profileController.js",
+          "backend/routes/profile.js"
+        ]
+      },
+      {
+        "name": "Batch Management",
+        "description": "Teachers can create, edit, and manage batches/classrooms with shareable links and passwords for student access",
+        "files": [
+          "src/app/teachers/create-batch/page.tsx",
+          "src/app/teachers/my-batches/page.tsx",
+          "src/app/teachers/explore-batches/page.tsx",
+          "src/components/batches/batch-card.tsx",
+          "src/components/batches/batch-details-header.tsx",
+          "src/components/batches/batch-info-modal.tsx",
+          "src/components/batches/batch-right-panel.tsx",
+          "backend/controllers/batchController.js",
+          "backend/routes/batch.js"
+        ]
+      },
+      {
+        "name": "Student Batch Joining",
+        "description": "Students can join batches using shareable links and passwords, with membership tracking in database",
+        "files": [
+          "src/app/students/join/page.tsx",
+          "src/app/students/browse-batches/page.tsx",
+          "src/app/students/my-batches/page.tsx",
+          "src/app/join-batch/[batch_id]/page.tsx"
+        ]
+      },
+      {
+        "name": "Submission System",
+        "description": "Students can create submissions with text content and optional file attachments, teachers can review and accept/reject submissions",
+        "files": [
+          "src/components/submissions/submission-form.tsx",
+          "src/components/submissions/batch-feed.tsx",
+          "src/components/submissions/refined-batch-feed.tsx",
+          "src/components/submissions/teacher-review-feed.tsx",
+          "src/components/submissions/new-post-modal.tsx",
+          "src/components/submissions/edit-post-modal.tsx",
+          "backend/controllers/submissionController.js",
+          "backend/routes/submission.js"
+        ]
+      },
+      {
+        "name": "Real-time Updates",
+        "description": "Socket.IO integration for real-time submission status updates and notifications",
+        "files": [
+          "src/contexts/socket-context.tsx",
+          "backend/server.js"
+        ]
+      },
+      {
+        "name": "Dashboard System",
+        "description": "Role-specific dashboards for teachers and students with different views and functionalities",
+        "files": [
+          "src/app/teachers/dashboard/page.tsx",
+          "src/app/students/my-batches/page.tsx",
+          "backend/controllers/dashboardController.js",
+          "backend/routes/dashboard.js"
+        ]
+      },
+      {
+        "name": "UI Components",
+        "description": "Modern, responsive UI components using shadcn/ui with dark/light theme support and mobile-first design",
+        "files": [
+          "src/components/ui/button.tsx",
+          "src/components/ui/card.tsx",
+          "src/components/ui/input.tsx",
+          "src/components/ui/textarea.tsx",
+          "src/components/ui/dialog.tsx",
+          "src/components/ui/avatar.tsx",
+          "src/components/ui/badge.tsx",
+          "src/components/ui/separator.tsx",
+          "src/components/ui/dropdown-menu.tsx",
+          "src/components/ui/tooltip.tsx",
+          "src/components/ui/sheet.tsx",
+          "src/components/ui/skeleton.tsx",
+          "src/components/ui/switch.tsx",
+          "src/components/ui/breadcrumb.tsx",
+          "src/components/ui/modern-side-bar.tsx",
+          "src/components/ui/shader-background.tsx",
+          "src/components/theme-provider.tsx",
+          "src/components/theme-toggle.tsx"
+        ]
+      },
+      {
+        "name": "Navigation System",
+        "description": "Role-based navigation with modern sidebar, responsive design, and active page highlighting",
+        "files": [
+          "src/components/navigation.tsx",
+          "src/components/layout/sidebar-layout.tsx",
+          "src/components/hooks/use-mobile.ts"
+        ]
+      },
+      {
+        "name": "API Routes",
+        "description": "Next.js API routes for frontend-backend communication with proper error handling and validation",
+        "files": [
+          "src/app/api/batches/create/route.ts",
+          "src/app/api/batches/join/route.ts",
+          "src/app/api/batches/browse/route.ts",
+          "src/app/api/batches/student/my-batches/route.ts",
+          "src/app/api/batches/teacher/my-batches/route.ts",
+          "src/app/api/batches/[batch_id]/public/route.ts",
+          "src/app/api/submissions/create/route.ts",
+          "src/app/api/submissions/batch/[batch_id]/route.ts",
+          "src/app/api/submissions/my-submissions/route.ts",
+          "src/app/api/submissions/explore/route.ts",
+          "src/app/api/submissions/[submission_id]/route.ts",
+          "src/app/api/submissions/[submission_id]/status/route.ts"
+        ]
+      },
+      {
+        "name": "Database Management",
+        "description": "MySQL database connection, schema setup, and table initialization with proper error handling",
+        "files": [
+          "backend/db/connection.js",
+          "backend/db/setup-database.js",
+          "backend/db/schema-updates.sql"
+        ]
+      },
+      {
+        "name": "Security & Validation",
+        "description": "Input validation, sanitization, rate limiting, and security headers for API protection",
+        "files": [
+          "backend/middleware/validation.js"
+        ]
+      },
+      {
+        "name": "File Upload",
+        "description": "File upload functionality for profile pictures and submission attachments",
+        "files": [
+          "src/utils/image-upload.ts",
+          "backend/controllers/uploadController.js",
+          "backend/routes/upload.js"
+        ]
+      },
+      {
+        "name": "Utility Functions",
+        "description": "Helper functions for API calls, authentication testing, and common utilities",
+        "files": [
+          "src/utils/api.ts",
+          "src/utils/auth-test.ts",
+          "src/lib/utils.ts"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+# ======================================
+# Practical Portal - Vercel Environment Variables
+# ======================================
+# Copy these environment variables to your Vercel dashboard
+# Go to: Project Settings > Environment Variables
+
+# ======================================
+# FRONTEND CONFIGURATION (Next.js)
+# ======================================
+
+# Firebase Configuration (Frontend)
+# Get these from your Firebase project settings
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+
+# API Configuration
+# Replace with your actual backend URL (e.g., Render, Railway, or Vercel Functions)
+NEXT_PUBLIC_API_BASE_URL=https://your-backend-domain.com/api
+
+# Application Configuration
+NEXT_PUBLIC_APP_NAME=Practical Portal
+NEXT_PUBLIC_APP_VERSION=1.0.0
+NEXT_PUBLIC_APP_ENV=production
+
+# Socket.IO Configuration
+NEXT_PUBLIC_SOCKET_URL=https://your-backend-domain.com
+
+# ======================================
+# VERCEL SPECIFIC
+# ======================================
+
+# Vercel automatically sets these, but you can override if needed
+# VERCEL_URL=your-app.vercel.app
+# VERCEL_ENV=production
