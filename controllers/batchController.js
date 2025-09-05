@@ -1,5 +1,5 @@
 const { pool } = require('../db/connection');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 /**
  * Batch Controller
