@@ -7,10 +7,10 @@ require('dotenv').config();
  * Uses environment variables for configuration
  */
 const pool = mysql.createPool({
-  host: process.env.DATABASE_HOST || 'localhost',
-  user: process.env.DATABASE_USER || 'root',
-  password: process.env.DATABASE_PASSWORD || '',
-  database: process.env.DATABASE_NAME || 'practical_portal',
+  host: process.env.DB_HOST || process.env.DATABASE_HOST || 'localhost',
+  user: process.env.DB_USER || process.env.DATABASE_USER || 'root',
+  password: process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD || '',
+  database: process.env.DB_NAME || process.env.DATABASE_NAME || 'practical_portal',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

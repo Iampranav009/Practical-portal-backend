@@ -13,10 +13,10 @@ require('dotenv').config();
 const validateEnvironment = () => {
   const requiredEnvVars = [
     'JWT_SECRET',
-    'DATABASE_HOST',
-    'DATABASE_USER', 
-    'DATABASE_PASSWORD',
-    'DATABASE_NAME'
+    'DB_HOST',
+    'DB_USER', 
+    'DB_PASSWORD',
+    'DB_NAME'
   ];
 
   const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -57,7 +57,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -72,7 +72,7 @@ app.use(setSecurityHeaders);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 
