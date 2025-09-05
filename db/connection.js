@@ -14,21 +14,36 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // Removed acquireTimeout and timeout as they are not valid MySQL2 options
+  // Enhanced connection configuration for better reliability
+  reconnect: true,
+  acquireTimeout: 60000,
+  timeout: 60000,
+  // SSL configuration for production
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 /**
- * Test database connection
- * Verifies that the database is accessible
+ * Test database connection with retry logic
+ * Verifies that the database is accessible with multiple attempts
  */
-const testConnection = async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('✅ MySQL Database connected successfully');
-    connection.release();
-  } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    process.exit(1);
+const testConnection = async (retries = 5, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await pool.getConnection();
+      console.log('✅ MySQL Database connected successfully');
+      connection.release();
+      return;
+    } catch (error) {
+      console.error(`❌ Database connection attempt ${i + 1}/${retries} failed:`, error.message);
+      
+      if (i === retries - 1) {
+        console.error('❌ All database connection attempts failed. Exiting...');
+        process.exit(1);
+      }
+      
+      console.log(`⏳ Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
 };
 
