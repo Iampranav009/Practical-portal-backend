@@ -11,6 +11,7 @@ require('dotenv').config();
  * Ensures all critical environment variables are set before starting the server
  */
 const validateEnvironment = () => {
+  // Check for both new and old environment variable names
   const requiredEnvVars = [
     'JWT_SECRET',
     'DB_HOST',
@@ -19,14 +20,20 @@ const validateEnvironment = () => {
     'DB_NAME'
   ];
 
-  const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  const missingVars = requiredEnvVars.filter(envVar => {
+    // Check if the new variable exists, or if the old variable exists as fallback
+    const newVar = process.env[envVar];
+    const oldVar = process.env[envVar.replace('DB_', 'DATABASE_')];
+    return !newVar && !oldVar;
+  });
   
   if (missingVars.length > 0) {
     console.error('❌ Missing required environment variables:');
     missingVars.forEach(envVar => {
-      console.error(`   - ${envVar}`);
+      console.error(`   - ${envVar} (or ${envVar.replace('DB_', 'DATABASE_')})`);
     });
     console.error('\n💡 Please check your .env file and ensure all required variables are set.');
+    console.error('💡 You can use either the new format (DB_*) or old format (DATABASE_*)');
     process.exit(1);
   }
   
