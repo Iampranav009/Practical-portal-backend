@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { buildApiUrl } from '@/utils/api'
 import { SidebarLayout } from '@/components/layout/sidebar-layout'
 import { JoinPageNavbar } from '@/components/layout/join-page-navbar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -112,7 +113,7 @@ function JoinFormContent() {
     setErrorMessage('')
     
     try {
-      const response = await fetch('/api/batches/join', {
+      const response = await fetch(buildApiUrl('batches/join'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,

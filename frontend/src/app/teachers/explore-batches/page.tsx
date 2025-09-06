@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
+import { buildApiUrl } from '@/utils/api'
 import { SidebarLayout } from '@/components/layout/sidebar-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -100,7 +101,7 @@ export default function TeacherExploreBatchesPage() {
    */
   const fetchAllBatches = async () => {
     try {
-      const response = await fetch('/api/batches/browse', {
+      const response = await fetch(buildApiUrl('batches/browse'), {
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,
           'Content-Type': 'application/json'

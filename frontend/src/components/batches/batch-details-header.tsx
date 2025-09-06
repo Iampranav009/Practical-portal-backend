@@ -201,9 +201,9 @@ export function BatchDetailsHeader({
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Enrolled Students */}
-              <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Enrolled Students</p>
@@ -212,9 +212,9 @@ export function BatchDetailsHeader({
               </div>
 
               {/* Total Submissions */}
-              <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <FileText className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Submissions</p>
@@ -223,9 +223,9 @@ export function BatchDetailsHeader({
               </div>
 
               {/* Pending Reviews */}
-              <div className="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
-                <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Clock className="h-5 w-5 text-yellow-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Reviews</p>
@@ -234,9 +234,9 @@ export function BatchDetailsHeader({
               </div>
 
               {/* Activity Score */}
-              <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <BarChart3 className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Activity Score</p>

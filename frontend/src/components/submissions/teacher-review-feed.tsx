@@ -696,7 +696,7 @@ export function TeacherReviewFeed({ batchId, onSubmissionUpdated }: TeacherRevie
 
                   {/* Attachments */}
                   {(submission.file_url || submission.code_sandbox_link) && (
-                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                       <div className="flex items-center space-x-4">
                         {submission.file_url && (
                           <Button variant="outline" size="sm" className="flex items-center">
@@ -728,7 +728,7 @@ export function TeacherReviewFeed({ batchId, onSubmissionUpdated }: TeacherRevie
                         variant="outline"
                         onClick={() => handleStatusUpdate(submission.submission_id, 'rejected')}
                         disabled={updatingSubmission === submission.submission_id}
-                        className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
                       >
                         <X className="h-4 w-4 mr-1" />
                         Reject

@@ -329,11 +329,11 @@ export function RefinedBatchFeed({ batchId, refreshTrigger, onEditPost }: Refine
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'accepted':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Approved</Badge>
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Rejected</Badge>
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>
       default:
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Pending</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
     }
   }
 

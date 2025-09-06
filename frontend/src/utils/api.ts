@@ -30,9 +30,21 @@ export const handleApiResponse = async (response: Response) => {
     
     if (contentType && contentType.includes('application/json')) {
       const errorData = await response.json();
+      
+      // Handle specific error types
+      if (response.status === 429) {
+        // Rate limiting error
+        const retryAfter = response.headers.get('Retry-After');
+        const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please try again later.';
+        throw new Error(`Too many requests.${retryMessage}`);
+      }
+      
       throw new Error(errorData.message || `API Error: ${response.status}`);
     } else {
       // If response is not JSON (like HTML error page), throw a generic error
+      if (response.status === 429) {
+        throw new Error('Too many requests. Please try again later.');
+      }
       throw new Error(`Server Error: ${response.status} - ${response.statusText}`);
     }
   }

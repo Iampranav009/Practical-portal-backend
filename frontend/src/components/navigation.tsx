@@ -5,7 +5,6 @@ import { User, BookOpen, Users, LogOut, LogIn, Compass, BarChart3, FolderOpen } 
 import { useAuth } from "@/contexts/auth-context"
 
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
 
 /**
  * Navigation Component
@@ -63,8 +62,6 @@ export function Navigation() {
               </>
             )}
 
-            {/* Theme Toggle */}
-            <ThemeToggle />
           </div>
         </div>
       </div>

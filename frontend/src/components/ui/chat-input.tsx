@@ -148,7 +148,7 @@ function ChatInputSubmit({
 			<Button
 				onClick={onStop}
 				className={cn(
-					"shrink-0 rounded-full p-1.5 h-fit border dark:border-zinc-600",
+					"shrink-0 rounded-full p-1.5 h-fit border",
 					className,
 				)}
 				{...props}
@@ -178,7 +178,7 @@ function ChatInputSubmit({
 	return (
 		<Button
 			className={cn(
-				"shrink-0 rounded-full p-1.5 h-fit border dark:border-zinc-600",
+				"shrink-0 rounded-full p-1.5 h-fit border",
 				className,
 			)}
 			disabled={isDisabled}

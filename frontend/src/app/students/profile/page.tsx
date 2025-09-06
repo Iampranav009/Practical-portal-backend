@@ -230,7 +230,7 @@ export default function StudentProfilePage() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
+            <div className="flex items-center space-x-2 text-red-600">
               <AlertCircle className="h-4 w-4" />
               <span>Access denied. Student account required.</span>
             </div>
@@ -313,7 +313,7 @@ export default function StudentProfilePage() {
                 className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
               {errors.name && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                <p className="text-sm text-red-600">{errors.name}</p>
               )}
             </div>
 
@@ -356,7 +356,7 @@ export default function StudentProfilePage() {
                 <option value="Fourth Year">Fourth Year</option>
               </select>
               {errors.year && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.year}</p>
+                <p className="text-sm text-red-600">{errors.year}</p>
               )}
             </div>
 
@@ -372,7 +372,7 @@ export default function StudentProfilePage() {
                 className={errors.subject ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
               {errors.subject && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.subject}</p>
+                <p className="text-sm text-red-600">{errors.subject}</p>
               )}
             </div>
 
@@ -388,7 +388,7 @@ export default function StudentProfilePage() {
                 className={errors.rollNumber ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
               {errors.rollNumber && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.rollNumber}</p>
+                <p className="text-sm text-red-600">{errors.rollNumber}</p>
               )}
             </div>
 
@@ -413,8 +413,8 @@ export default function StudentProfilePage() {
             {message && (
               <div className={`text-sm text-center p-3 rounded-md ${
                 message.includes("successfully") 
-                  ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" 
-                  : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                  ? "bg-green-50 text-green-700 border border-green-200" 
+                  : "bg-red-50 text-red-700 border border-red-200"
               }`}>
                 {message}
               </div>

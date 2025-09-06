@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/theme-provider';
+import { apiCall } from '@/utils/api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +16,6 @@ import {
 import { 
   Home, 
   User, 
-  Settings, 
   LogOut, 
   X, 
   BarChart3,
@@ -29,10 +29,10 @@ import {
   School,
   Calendar,
   Eye,
-  Palette,
   ChevronUp,
   MessageCircle
 } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -58,11 +58,36 @@ interface SidebarDrawerProps {
  */
 export function SidebarDrawer({ isOpen, onClose, className = "" }: SidebarDrawerProps) {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const [profilePicture, setProfilePicture] = React.useState<string>("");
+
+  // Fetch user profile picture
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (!user?.jwtToken) return;
+
+      try {
+        const response = await apiCall('profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${user.jwtToken}`
+          }
+        });
+
+        if (response.success && response.data.profile_picture_url) {
+          setProfilePicture(response.data.profile_picture_url);
+        }
+      } catch (error) {
+        console.error('Error fetching profile picture:', error);
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user?.jwtToken]);
 
   // Get navigation items based on user role
   const getNavigationItems = (role: 'student' | 'teacher'): NavigationItem[] => {
@@ -271,10 +296,19 @@ export function SidebarDrawer({ isOpen, onClose, className = "" }: SidebarDrawer
                 variant="ghost"
                 className="profile-button w-full justify-start h-12 px-3"
               >
-                <div className="profile-avatar w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3 transition-all duration-200">
-                  <span className="text-primary font-medium text-sm">
-                    {getInitials(getUserDisplayName())}
-                  </span>
+                <div className="profile-avatar w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3 transition-all duration-200 overflow-hidden">
+                  {profilePicture ? (
+                    <Image
+                      src={profilePicture}
+                      alt="Profile Picture"
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover rounded-full"
+                      onError={() => setProfilePicture("")}
+                    />
+                  ) : (
+                    <User className="w-4 h-4 text-primary" />
+                  )}
                 </div>
                 <div className="flex-1 text-left">
                   <p className="profile-name text-sm font-medium text-foreground truncate transition-all duration-200">
@@ -299,19 +333,6 @@ export function SidebarDrawer({ isOpen, onClose, className = "" }: SidebarDrawer
                 <span>Profile</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem onClick={() => router.push(`/${user.role}s/settings`)}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-                <Palette className="mr-2 h-4 w-4" />
-                <span>Switch to {theme === "light" ? "Dark" : "Light"} Theme</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
               
               <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">
                 <LogOut className="mr-2 h-4 w-4" />

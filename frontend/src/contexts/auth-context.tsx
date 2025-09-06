@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { apiCall } from '@/utils/api'
+import { profileRateLimiter } from '@/utils/rate-limiter'
 
 // Define user role type
 export type UserRole = 'student' | 'teacher'
@@ -22,6 +23,7 @@ export interface AuthUser extends User {
   role?: UserRole
   userId?: number
   jwtToken?: string
+  profileComplete?: boolean
 }
 
 // Authentication context interface
@@ -31,6 +33,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, role: UserRole) => Promise<void>
   logout: () => Promise<void>
+  checkProfileCompletion: () => Promise<boolean>
+  refreshUserProfile: () => Promise<void>
 }
 
 // Create authentication context
@@ -45,6 +49,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  
+  // Cache for profile completion status to prevent multiple API calls
+  const [profileCompletionCache, setProfileCompletionCache] = useState<{
+    [key: string]: { isComplete: boolean; timestamp: number }
+  }>({})
+  
+  // Rate limiting for profile completion checks (5 seconds between calls)
+  const [lastProfileCheck, setLastProfileCheck] = useState<number>(0)
+  const PROFILE_CHECK_COOLDOWN = 5000 // 5 seconds
+
+  /**
+   * Check if user's profile is complete based on role
+   * Returns true if all required fields are filled
+   * Uses caching to prevent multiple API calls
+   */
+  const checkProfileCompletionStatus = async (userId: number, role: UserRole, token: string): Promise<boolean> => {
+    const cacheKey = `${userId}-${role}`
+    const now = Date.now()
+    
+    // Check cache first (valid for 30 seconds)
+    if (profileCompletionCache[cacheKey] && (now - profileCompletionCache[cacheKey].timestamp) < 30000) {
+      return profileCompletionCache[cacheKey].isComplete
+    }
+    
+    // Rate limiting check using the rate limiter
+    if (!profileRateLimiter.isAllowed('profile-check')) {
+      const timeUntilNext = profileRateLimiter.getTimeUntilNextCall('profile-check')
+      console.log(`Profile check rate limited, using cached value. Next call allowed in ${Math.ceil(timeUntilNext / 1000)}s`)
+      return profileCompletionCache[cacheKey]?.isComplete || false
+    }
+    
+    try {
+      setLastProfileCheck(now)
+      
+      const response = await apiCall('profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.success) {
+        // Cache the failure result
+        setProfileCompletionCache(prev => ({
+          ...prev,
+          [cacheKey]: { isComplete: false, timestamp: now }
+        }))
+        return false
+      }
+
+      const profileData = response.data
+
+      // Check common required fields
+      if (!profileData.name || profileData.name.trim().length < 2) {
+        setProfileCompletionCache(prev => ({
+          ...prev,
+          [cacheKey]: { isComplete: false, timestamp: now }
+        }))
+        return false
+      }
+
+      // Check role-specific required fields
+      let isComplete = false
+      if (role === 'teacher') {
+        isComplete = !!(profileData.college_name && profileData.college_name.trim().length > 0)
+      } else {
+        isComplete = !!(
+          profileData.year && 
+          profileData.subject && 
+          profileData.subject.trim().length > 0 &&
+          profileData.roll_number && 
+          profileData.roll_number.trim().length > 0
+        )
+      }
+      
+      // Cache the result
+      setProfileCompletionCache(prev => ({
+        ...prev,
+        [cacheKey]: { isComplete, timestamp: now }
+      }))
+      
+      return isComplete
+    } catch (error) {
+      console.error('Error checking profile completion:', error)
+      
+      // Cache the failure result
+      setProfileCompletionCache(prev => ({
+        ...prev,
+        [cacheKey]: { isComplete: false, timestamp: now }
+      }))
+      
+      return false
+    }
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -56,11 +154,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               method: 'GET'
             });
             
+            // Check profile completion status
+            const profileComplete = await checkProfileCompletionStatus(userData.data.user_id, userData.data.role, userData.data.token)
+            
             const userWithRole: AuthUser = {
               ...firebaseUser,
               role: userData.data.role,
               userId: userData.data.user_id,
-              jwtToken: userData.data.token
+              jwtToken: userData.data.token,
+              profileComplete
             }
             setUser(userWithRole)
             
@@ -140,12 +242,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  /**
+   * Check if current user's profile is complete
+   * Returns true if profile is complete, false otherwise
+   * Uses caching and rate limiting to prevent excessive API calls
+   */
+  const checkProfileCompletion = async (): Promise<boolean> => {
+    if (!user || !user.userId || !user.role || !user.jwtToken) {
+      return false
+    }
+
+    const cacheKey = `${user.userId}-${user.role}`
+    const now = Date.now()
+    
+    // Check cache first (valid for 30 seconds)
+    if (profileCompletionCache[cacheKey] && (now - profileCompletionCache[cacheKey].timestamp) < 30000) {
+      const cachedResult = profileCompletionCache[cacheKey].isComplete
+      // Update user state with cached result
+      setUser(prev => prev ? { ...prev, profileComplete: cachedResult } : null)
+      return cachedResult
+    }
+
+    // Rate limiting check using the rate limiter
+    if (!profileRateLimiter.isAllowed('profile-check')) {
+      const timeUntilNext = profileRateLimiter.getTimeUntilNextCall('profile-check')
+      console.log(`Profile check rate limited, using cached value. Next call allowed in ${Math.ceil(timeUntilNext / 1000)}s`)
+      const cachedResult = profileCompletionCache[cacheKey]?.isComplete || false
+      setUser(prev => prev ? { ...prev, profileComplete: cachedResult } : null)
+      return cachedResult
+    }
+
+    try {
+      const isComplete = await checkProfileCompletionStatus(user.userId, user.role, user.jwtToken)
+      
+      // Update user state with new profile completion status
+      setUser(prev => prev ? { ...prev, profileComplete: isComplete } : null)
+      
+      return isComplete
+    } catch (error) {
+      console.error('Error checking profile completion:', error)
+      // Use cached value if available, otherwise default to false
+      const cachedResult = profileCompletionCache[cacheKey]?.isComplete || false
+      setUser(prev => prev ? { ...prev, profileComplete: cachedResult } : null)
+      return cachedResult
+    }
+  }
+
+  /**
+   * Refresh user profile data and completion status
+   * Useful after profile updates
+   * Clears cache to force fresh data fetch
+   */
+  const refreshUserProfile = async (): Promise<void> => {
+    if (!user || !user.userId || !user.role || !user.jwtToken) {
+      return
+    }
+
+    const cacheKey = `${user.userId}-${user.role}`
+    
+    // Clear cache for this user to force fresh fetch
+    setProfileCompletionCache(prev => {
+      const newCache = { ...prev }
+      delete newCache[cacheKey]
+      return newCache
+    })
+
+    try {
+      const isComplete = await checkProfileCompletionStatus(user.userId, user.role, user.jwtToken)
+      setUser(prev => prev ? { ...prev, profileComplete: isComplete } : null)
+    } catch (error) {
+      console.error('Error refreshing user profile:', error)
+    }
+  }
+
   const value = {
     user,
     loading,
     signIn,
     signUp,
-    logout
+    logout,
+    checkProfileCompletion,
+    refreshUserProfile
   }
 
   return (

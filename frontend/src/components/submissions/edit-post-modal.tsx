@@ -185,7 +185,7 @@ export function EditPostModal({ isOpen, onClose, post, batchId, onPostUpdated }:
         fileUrl: fileUrl || null // Include file URL if uploaded
       }
 
-      const response = await fetch(buildApiUrl(`submissions/${post.id}`), {
+      const response = await fetch(buildApiUrl(`submissions/${post.id}/edit`), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,

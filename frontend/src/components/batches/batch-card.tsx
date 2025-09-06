@@ -92,7 +92,7 @@ export function BatchCard({
   const cardContent = (
     <Card className={`group hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden card-lighter ${className}`}>
         {/* Batch Cover Image area: show cover image if available; fallback to centered icon/initials */}
-        <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50">
+        <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
           {batch.cover_image && !imageError ? (
             <img
               src={batch.cover_image}

@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
+import { buildApiUrl } from '@/utils/api'
 import { SidebarLayout } from '@/components/layout/sidebar-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -227,7 +228,7 @@ export default function CreateBatchPage() {
         coverImageData = await convertImageToBase64(selectedCoverImage)
       }
 
-      const response = await fetch('/api/batches/create', {
+      const response = await fetch(buildApiUrl('batches/create'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,

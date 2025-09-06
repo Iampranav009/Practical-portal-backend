@@ -221,7 +221,7 @@ export default function TeacherProfilePage() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
+            <div className="flex items-center space-x-2 text-red-600">
               <AlertCircle className="h-4 w-4" />
               <span>Access denied. Teacher account required.</span>
             </div>
@@ -312,7 +312,7 @@ export default function TeacherProfilePage() {
                 className={`h-10 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.name && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                <p className="text-sm text-red-600">{errors.name}</p>
               )}
             </div>
 
@@ -345,7 +345,7 @@ export default function TeacherProfilePage() {
                 className={`h-10 ${errors.collegeName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.collegeName && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.collegeName}</p>
+                <p className="text-sm text-red-600">{errors.collegeName}</p>
               )}
             </div>
 
@@ -362,7 +362,7 @@ export default function TeacherProfilePage() {
                 className={`h-10 ${errors.contactNumber ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
               {errors.contactNumber && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.contactNumber}</p>
+                <p className="text-sm text-red-600">{errors.contactNumber}</p>
               )}
               <p className="text-xs text-muted-foreground">
                 Include country code if international (e.g., +91 for India)
@@ -375,8 +375,8 @@ export default function TeacherProfilePage() {
             {message && (
               <div className={`text-sm text-center p-3 rounded-md ${
                 message.includes("successfully") 
-                  ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" 
-                  : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                  ? "bg-green-50 text-green-700 border border-green-200" 
+                  : "bg-red-50 text-red-700 border border-red-200"
               }`}>
                 {message}
               </div>

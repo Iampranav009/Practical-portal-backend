@@ -153,7 +153,7 @@ export default function StudentBrowseBatchesPage() {
    * Handle viewing a joined batch
    */
   const handleViewBatch = (batchId: number) => {
-    router.push(`/students/batches/${batchId}`)
+    router.push(`/batches/${batchId}`)
   }
 
   // Loading state

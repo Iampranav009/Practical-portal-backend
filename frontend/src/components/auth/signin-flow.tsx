@@ -363,7 +363,7 @@ const ProgressDots = ({ count = 3, activeIndex = 2, color = "white" }: ProgressD
 interface IconBadgeProps {
   icon: React.ReactNode;
   size?: "sm" | "md" | "lg";
-  variant?: "light" | "dark";
+  variant?: "light";
 }
 
 const IconBadge = ({ icon, size = "md", variant = "light" }: IconBadgeProps) => {
@@ -375,7 +375,6 @@ const IconBadge = ({ icon, size = "md", variant = "light" }: IconBadgeProps) => 
 
   const variants = {
     light: "bg-white/10 backdrop-blur-sm text-white",
-    dark: "bg-black/10 backdrop-blur-sm text-foreground"
   };
 
   return (
@@ -411,13 +410,12 @@ const HeroSection = ({ title, description, icon, showProgress = true }: HeroSect
 // Gradient Background Component
 interface GradientBackgroundProps {
   children: React.ReactNode;
-  variant?: "default" | "dark" | "light";
+  variant?: "default" | "light";
 }
 
-const GradientBackground = ({ children, variant = "dark" }: GradientBackgroundProps) => {
+const GradientBackground = ({ children, variant = "default" }: GradientBackgroundProps) => {
   const variants = {
     default: "bg-gradient-to-br from-background to-secondary",
-    dark: "bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900",
     light: "bg-gradient-to-br from-white via-blue-50 to-purple-50"
   };
 
@@ -773,7 +771,7 @@ const SignInFlow = () => {
       </div>
 
       {/* Right Side - Hero Section with Gradient Background */}
-      <GradientBackground variant="dark">
+      <GradientBackground variant="default">
         <HeroSection
           title="Secure Authentication"
           description="Your data is protected with industry-standard encryption and security measures. Sign in with confidence."

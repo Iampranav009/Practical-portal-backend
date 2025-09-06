@@ -37,40 +37,6 @@
   --sidebar-ring: 217.2 91.2% 59.8%;
 }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 263 70% 56%;
-  --primary-foreground: 0 0% 100%;
-  --primary-glow: 263 70% 70%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 195 100% 59%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 263 70% 56%;
-  --gradient-primary: linear-gradient(135deg, hsl(263 70% 56%), hsl(195 100% 59%));
-  --gradient-surface: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(217.2 32.6% 17.5%));
-  --shadow-glow: 0 20px 40px -12px hsl(263 70% 56% / 0.4);
-  --shadow-subtle: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
-  --sidebar-background: 240 5.9% 10%;
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
-}
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -113,7 +79,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   /* Mobile-specific improvements */
   -webkit-text-size-adjust: 100%;
-  /* text-size-adjust: 100%; */ /* Commented out - not supported by Firefox, Safari */
+  text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   /* Safe area support for iOS */
   padding-left: env(safe-area-inset-left);
@@ -125,11 +91,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Dark mode specific adjustments */
-.dark {
-  color-scheme: dark;
-}
-
+/* Light theme specific adjustments */
 .light {
   color-scheme: light;
 }
@@ -175,22 +137,6 @@ body {
   transform: scale(1.02);
 }
 
-/* Dark mode hover enhancements */
-.dark .sidebar-nav-item:hover {
-  background-color: hsl(var(--primary) / 0.15);
-  color: hsl(var(--primary) / 0.9);
-  box-shadow: 0 2px 8px hsl(var(--primary) / 0.2);
-}
-
-.dark .sidebar-nav-item.active {
-  background-color: hsl(var(--primary) / 0.2);
-  color: hsl(var(--primary) / 0.95);
-}
-
-.dark .sidebar-nav-item.active:hover {
-  background-color: hsl(var(--primary) / 0.25);
-  box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
-}
 
 /* Additional hover variations for better visibility */
 .sidebar-nav-item:hover::before {
@@ -273,46 +219,7 @@ body {
   box-shadow: 0 2px 8px hsl(var(--primary) / 0.2);
 }
 
-/* Dark mode profile button enhancements */
-.dark .profile-button:hover {
-  background-color: hsl(var(--primary) / 0.15);
-  border-color: hsl(var(--primary) / 0.4);
-  box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
-}
 
-.dark .profile-button:hover .profile-avatar {
-  background-color: hsl(var(--primary) / 0.4);
-}
-
-.dark .profile-button:hover .profile-name {
-  color: hsl(var(--primary) / 0.9);
-}
-
-.dark .profile-button:hover .profile-role {
-  color: hsl(var(--primary) / 0.7);
-}
-
-/* Fix bright hover colors in dark theme */
-.dark .hover\:bg-accent:hover {
-  background-color: hsl(var(--muted) / 0.3);
-}
-
-.dark .hover\:bg-slate-50:hover {
-  background-color: hsl(var(--muted) / 0.3);
-}
-
-.dark .hover\:bg-slate-100:hover {
-  background-color: hsl(var(--muted) / 0.4);
-}
-
-/* Ensure buttons have subtle hover effects in dark mode */
-.dark button:hover {
-  background-color: hsl(var(--muted) / 0.3);
-}
-
-.dark .bg-accent {
-  background-color: hsl(var(--primary) / 0.1);
-}
 
 /* Lighter card variants for better UI aesthetics */
 .card-light {
@@ -320,19 +227,9 @@ body {
   border: 1px solid hsl(var(--border) / 0.5);
 }
 
-.dark .card-light {
-  background-color: hsl(var(--card) / 0.6);
-  border: 1px solid hsl(var(--border) / 0.3);
-}
-
 .card-lighter {
   background-color: hsl(var(--card) / 0.6);
   border: 1px solid hsl(var(--border) / 0.3);
-}
-
-.dark .card-lighter {
-  background-color: hsl(var(--card) / 0.4);
-  border: 1px solid hsl(var(--border) / 0.2);
 }
 
 /* Information banner styling */
@@ -342,11 +239,6 @@ body {
   color: hsl(var(--primary));
 }
 
-.dark .info-banner {
-  background-color: hsl(var(--primary) / 0.15);
-  border: 1px solid hsl(var(--primary) / 0.3);
-  color: hsl(var(--primary) / 0.9);
-}
 
 @keyframes blob {
   0% {

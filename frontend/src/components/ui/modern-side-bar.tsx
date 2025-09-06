@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/theme-provider';
 import { useStudentBatches } from '@/components/hooks/use-student-batches';
 import { useNotifications } from '@/components/hooks/use-notifications';
+import { apiCall } from '@/utils/api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,6 @@ import {
 import { 
   Home, 
   User, 
-  Settings, 
   LogOut, 
   Menu, 
   X, 
@@ -33,12 +33,12 @@ import {
   School,
   Calendar,
   Eye,
-  Palette,
   ChevronUp,
   GraduationCap,
   Clock,
   MessageCircle
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface NavigationItem {
   id: string;
@@ -83,12 +83,13 @@ const getNavigationItems = (role: 'student' | 'teacher', unreadCount: number = 0
 
 export function ModernSidebar({ className = "" }: SidebarProps) {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string>("");
   const [activeItem, setActiveItem] = useState("");
   const [showMessagePopup, setShowMessagePopup] = useState(false);
 
@@ -97,6 +98,30 @@ export function ModernSidebar({ className = "" }: SidebarProps) {
 
   // Get notifications for teachers
   const { unreadCount } = useNotifications();
+
+  // Fetch user profile picture
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (!user?.jwtToken) return;
+
+      try {
+        const response = await apiCall('profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${user.jwtToken}`
+          }
+        });
+
+        if (response.success && response.data.profile_picture_url) {
+          setProfilePicture(response.data.profile_picture_url);
+        }
+      } catch (error) {
+        console.error('Error fetching profile picture:', error);
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user?.jwtToken]);
 
   // Get navigation items based on user role
   const navigationItems = user?.role ? getNavigationItems(user.role as 'student' | 'teacher', unreadCount) : [];
@@ -424,10 +449,19 @@ export function ModernSidebar({ className = "" }: SidebarProps) {
                     ${isCollapsed ? "justify-center p-2.5" : "space-x-3 px-3 py-3"}
                   `}
                 >
-                  <div className="profile-avatar w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0 transition-all duration-200">
-                    <span className="text-primary font-medium text-sm">
-                      {getInitials(getUserDisplayName())}
-                    </span>
+                  <div className="profile-avatar w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 overflow-hidden">
+                    {profilePicture ? (
+                      <Image
+                        src={profilePicture}
+                        alt="Profile Picture"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover rounded-full"
+                        onError={() => setProfilePicture("")}
+                      />
+                    ) : (
+                      <User className="w-4 h-4 text-primary" />
+                    )}
                   </div>
                   
                   {!isCollapsed && (
@@ -460,21 +494,7 @@ export function ModernSidebar({ className = "" }: SidebarProps) {
                   <span>Profile</span>
                 </DropdownMenuItem>
                 
-                {/* Settings Button */}
-                <DropdownMenuItem onClick={() => router.push(`/${user.role}s/settings`)}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
                 
-                <DropdownMenuSeparator />
-                
-                {/* Theme Toggle Button */}
-                <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-                  <Palette className="mr-2 h-4 w-4" />
-                  <span>Switch to {theme === "light" ? "Dark" : "Light"} Theme</span>
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
                 
                 {/* Logout Button */}
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">

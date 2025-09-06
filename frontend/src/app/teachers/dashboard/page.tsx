@@ -191,11 +191,11 @@ export default function TeacherDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'accepted':
-        return { color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400', icon: CheckCircle }
+        return { color: 'bg-green-100 text-green-800', icon: CheckCircle }
       case 'rejected':
-        return { color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400', icon: XCircle }
+        return { color: 'bg-red-100 text-red-800', icon: XCircle }
       default:
-        return { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400', icon: Clock }
+        return { color: 'bg-yellow-100 text-yellow-800', icon: Clock }
     }
   }
 
@@ -448,7 +448,7 @@ export default function TeacherDashboard() {
                             {batch.submission_count} submissions
                           </span>
                           {batch.pending_count > 0 && (
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                               {batch.pending_count} pending
                             </Badge>
                           )}

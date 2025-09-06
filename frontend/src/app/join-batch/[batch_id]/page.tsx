@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter, useParams } from 'next/navigation'
+import { buildApiUrl } from '@/utils/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -147,7 +148,7 @@ export default function JoinBatchPage() {
     setErrorMessage('')
     
     try {
-      const response = await fetch('/api/batches/join', {
+      const response = await fetch(buildApiUrl('batches/join'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,

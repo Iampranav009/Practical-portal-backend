@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Check, X, Clock, FileText, Download, Loader2, ExternalLink } from 'lucide-react'
+import { Check, X, Clock, FileText, Download, Loader2, ExternalLink, Code } from 'lucide-react'
 import { buildApiUrl } from '@/utils/api'
+import { CodeSnippet } from '@/components/ui/code-snippets-3'
 
 /**
  * Batch Feed Component
@@ -26,6 +27,7 @@ interface Submission {
   content: string
   file_url?: string
   code_sandbox_link?: string
+  code_language?: string
   status: 'pending' | 'accepted' | 'rejected'
   created_at: string
   updated_at: string
@@ -87,26 +89,6 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
     }
   }, [socket])
 
-  // Fetch submissions when component mounts or refresh is triggered
-  useEffect(() => {
-    if (user && batchId) {
-      fetchSubmissions()
-    }
-  }, [user, batchId, refreshTrigger])
-
-  // For teachers, use the TeacherReviewFeed component to see all student posts
-  // For students, use the regular feed to see only their own posts (private feed)
-  if (user?.role === 'teacher') {
-    return (
-      <TeacherReviewFeed 
-        batchId={batchId} 
-        onSubmissionUpdated={() => {
-          // Refresh trigger functionality can be handled in the parent component
-        }} 
-      />
-    )
-  }
-
   /**
    * Fetch submissions from API
    */
@@ -139,6 +121,26 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Fetch submissions when component mounts or refresh is triggered
+  useEffect(() => {
+    if (user && batchId) {
+      fetchSubmissions()
+    }
+  }, [user, batchId, refreshTrigger])
+
+  // For teachers, use the TeacherReviewFeed component to see all student posts
+  // For students, use the regular feed to see only their own posts (private feed)
+  if (user?.role === 'teacher') {
+    return (
+      <TeacherReviewFeed 
+        batchId={batchId} 
+        onSubmissionUpdated={() => {
+          // Refresh trigger functionality can be handled in the parent component
+        }} 
+      />
+    )
   }
 
   /**
@@ -196,6 +198,244 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
         {index < content.split('\n').length - 1 && <br />}
       </React.Fragment>
     ))
+  }
+
+  /**
+   * Detect content type based on submission data
+   * Enhanced to better detect code submissions
+   */
+  const getContentType = (submission: Submission): 'text' | 'image' | 'code' => {
+    // If there's a code sandbox link, it's definitely code
+    if (submission.code_sandbox_link) {
+      return 'code'
+    }
+    
+    // If there's a specified code language, treat as code
+    if (submission.code_language) {
+      return 'code'
+    }
+    
+    // Enhanced code pattern detection
+    const codePatterns = [
+      // JavaScript/TypeScript patterns
+      /function\s+\w+/,
+      /const\s+\w+\s*=/,
+      /let\s+\w+\s*=/,
+      /var\s+\w+\s*=/,
+      /import\s+/,
+      /export\s+/,
+      /class\s+\w+/,
+      /interface\s+\w+/,
+      /type\s+\w+/,
+      /=>\s*\{/,
+      /console\.log/,
+      /return\s+/,
+      
+      // HTML patterns
+      /<[a-zA-Z]+[^>]*>/,
+      /<\/[a-zA-Z]+>/,
+      /<!DOCTYPE/,
+      /<html/,
+      /<head/,
+      /<body/,
+      
+      // CSS patterns
+      /\.[a-zA-Z-]+\s*\{/,
+      /#[a-zA-Z-]+\s*\{/,
+      /@media/,
+      /@import/,
+      
+      // General code patterns
+      /\{\s*[\w\s:,"']+\s*\}/,
+      /;\s*$/,
+      /\/\/.*$/,
+      /\/\*[\s\S]*?\*\//,
+      
+      // Python patterns
+      /def\s+\w+/,
+      /import\s+\w+/,
+      /from\s+\w+/,
+      /class\s+\w+/,
+      /if\s+__name__/,
+      
+      // Java patterns
+      /public\s+class/,
+      /private\s+\w+/,
+      /public\s+static/,
+      /System\.out\.print/,
+      
+      // C/C++ patterns
+      /#include/,
+      /int\s+main/,
+      /printf/,
+      /cout\s*<</,
+      
+      // SQL patterns
+      /SELECT\s+/,
+      /INSERT\s+INTO/,
+      /UPDATE\s+/,
+      /DELETE\s+FROM/,
+      /CREATE\s+TABLE/
+    ]
+    
+    // Check if content matches any code patterns
+    if (codePatterns.some(pattern => pattern.test(submission.content))) {
+      return 'code'
+    }
+    
+    // Check if content has multiple lines and looks like code structure
+    const lines = submission.content.split('\n')
+    if (lines.length > 3) {
+      // Check if multiple lines contain code-like patterns
+      const codeLineCount = lines.filter(line => 
+        codePatterns.some(pattern => pattern.test(line.trim()))
+      ).length
+      
+      // If more than 30% of lines look like code, treat as code
+      if (codeLineCount / lines.length > 0.3) {
+        return 'code'
+      }
+    }
+    
+    // Check if content has image URL patterns
+    const imagePatterns = [
+      /https?:\/\/.*\.(jpg|jpeg|png|gif|webp)/i,
+      /data:image\//
+    ]
+    
+    if (submission.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i) || 
+        imagePatterns.some(pattern => pattern.test(submission.content))) {
+      return 'image'
+    }
+    
+    return 'text'
+  }
+
+  /**
+   * Render content based on type
+   */
+  const renderContent = (submission: Submission) => {
+    const contentType = getContentType(submission)
+    
+    switch (contentType) {
+      case 'image':
+        // Extract image URL from content or use file_url
+        const imageUrl = submission.file_url || 
+          submission.content.match(/https?:\/\/.*\.(jpg|jpeg|png|gif|webp)/i)?.[0]
+        
+        return (
+          <div className="mt-4">
+            {imageUrl && (
+              <div className="rounded-lg overflow-hidden border border-border mb-4">
+                <img
+                  src={imageUrl}
+                  alt="Submission content"
+                  className="w-full h-64 object-cover"
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              </div>
+            )}
+            {submission.content && !submission.content.includes(imageUrl || '') && (
+              <p className="text-foreground leading-relaxed">{submission.content}</p>
+            )}
+          </div>
+        )
+      
+      case 'code':
+        // Map stored language codes to proper language names for syntax highlighting
+        const mapLanguageCode = (languageCode?: string): string => {
+          if (!languageCode) return 'typescript' // default fallback
+          
+          const languageMap: { [key: string]: string } = {
+            'typescript': 'typescript',
+            'javascript': 'javascript', 
+            'python': 'python',
+            'java': 'java',
+            'cpp': 'cpp',
+            'c': 'c',
+            'html': 'html',
+            'css': 'css',
+            'sql': 'sql',
+            'bash': 'bash',
+            'json': 'json',
+            'xml': 'xml',
+            'markdown': 'markdown',
+            'text': 'text'
+          }
+          
+          return languageMap[languageCode.toLowerCase()] || languageCode
+        }
+        
+        // Auto-detect language if not specified
+        const detectLanguage = (content: string, specifiedLanguage?: string): string => {
+          // First, try to use the specified language (mapped to proper name)
+          if (specifiedLanguage) {
+            return mapLanguageCode(specifiedLanguage)
+          }
+          
+          // Language detection patterns for auto-detection
+          if (/function\s+\w+|const\s+\w+\s*=|let\s+\w+\s*=/.test(content)) return 'javascript'
+          if (/interface\s+\w+|type\s+\w+|:\s*\w+/.test(content)) return 'typescript'
+          if (/<[a-zA-Z]+[^>]*>|<!DOCTYPE/.test(content)) return 'html'
+          if (/\.[a-zA-Z-]+\s*\{|#[a-zA-Z-]+\s*\{/.test(content)) return 'css'
+          if (/def\s+\w+|import\s+\w+|from\s+\w+/.test(content)) return 'python'
+          if (/public\s+class|System\.out\.print/.test(content)) return 'java'
+          if (/#include|int\s+main|printf/.test(content)) return 'c'
+          if (/SELECT\s+|INSERT\s+INTO|CREATE\s+TABLE/.test(content)) return 'sql'
+          
+          return 'typescript' // default fallback
+        }
+        
+        const detectedLanguage = detectLanguage(submission.content, submission.code_language)
+        
+        // Create a user-friendly title with proper language name
+        const getLanguageDisplayName = (languageCode: string): string => {
+          const displayNames: { [key: string]: string } = {
+            'typescript': 'TypeScript',
+            'javascript': 'JavaScript',
+            'python': 'Python', 
+            'java': 'Java',
+            'cpp': 'C++',
+            'c': 'C',
+            'html': 'HTML',
+            'css': 'CSS',
+            'sql': 'SQL',
+            'bash': 'Bash',
+            'json': 'JSON',
+            'xml': 'XML',
+            'markdown': 'Markdown',
+            'text': 'Plain Text'
+          }
+          
+          return displayNames[languageCode.toLowerCase()] || languageCode
+        }
+        
+        const displayLanguage = getLanguageDisplayName(detectedLanguage)
+        const title = displayLanguage
+        
+        return (
+          <div className="mt-4">
+            <CodeSnippet
+              title={title}
+              code={submission.content}
+              language={detectedLanguage}
+              className="w-full"
+              showLineNumbers={true}
+              border={true}
+            />
+          </div>
+        )
+      
+      default:
+        return (
+          <div className="mt-4">
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{submission.content}</p>
+          </div>
+        )
+    }
   }
 
   if (loading) {
@@ -290,14 +530,8 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
           </CardHeader>
           
           <CardContent className="pt-0">
-            {/* Submission Content */}
-            <div className="mb-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800">
-                  {formatContent(submission.content)}
-                </pre>
-              </div>
-            </div>
+            {/* Dynamic Content Rendering */}
+            {renderContent(submission)}
 
             {/* Attachments */}
             {(submission.file_url || submission.code_sandbox_link) && (

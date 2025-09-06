@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
+import { buildApiUrl } from '@/utils/api'
 import { SidebarLayout } from '@/components/layout/sidebar-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -85,7 +86,7 @@ export default function StudentMyBatchesPage() {
    */
   const fetchStudentBatches = async () => {
     try {
-      const response = await fetch('/api/batches/student/my-batches', {
+      const response = await fetch(buildApiUrl('batches/student/my-batches'), {
         headers: {
           'Authorization': `Bearer ${user?.jwtToken}`,
           'Content-Type': 'application/json'

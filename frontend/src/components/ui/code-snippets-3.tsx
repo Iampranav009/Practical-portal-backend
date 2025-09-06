@@ -135,7 +135,7 @@ interface CodeSnippetProps {
   border?: boolean
   theme?: PrismTheme
   showLineNumbers?: boolean
-  adaptiveTheme?: { light: PrismTheme; dark: PrismTheme }
+  adaptiveTheme?: { light: PrismTheme }
   tabs?: { [key: string]: { code: string; language?: string } }
   activeTab?: string
   onTabChange?: (tab: string) => void
@@ -159,29 +159,10 @@ export const CodeSnippet: React.FC<CodeSnippetProps> = ({
   const currentLanguage = currentTab && tabs ? tabs[currentTab].language || language : language
 
   const lines = currentCode.trim().split("\n")
-  const [isDark, setIsDark] = useState(false)
-
-  useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDark(document.documentElement.classList.contains("dark"))
-    }
-    checkDarkMode()
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes" && mutation.attributeName === "class") {
-          checkDarkMode()
-        }
-      })
-    })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
-    return () => observer.disconnect()
-  }, [])
-
+  // Only use light theme since dark theme is disabled
   const selectedTheme = adaptiveTheme
-    ? isDark
-      ? adaptiveTheme.dark
-      : adaptiveTheme.light
-    : theme || (isDark ? defaultTheme : lightTheme)
+    ? adaptiveTheme.light
+    : theme || lightTheme
 
   return (
     <div

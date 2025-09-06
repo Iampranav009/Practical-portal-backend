@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
 import { SocketProvider } from "@/contexts/socket-context"
+import { ProfileSetupWrapper } from "@/components/auth/profile-setup-wrapper"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,15 +38,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider>
           <AuthProvider>
             <SocketProvider>
-              {children}
+              <ProfileSetupWrapper>
+                {children}
+              </ProfileSetupWrapper>
             </SocketProvider>
           </AuthProvider>
         </ThemeProvider>

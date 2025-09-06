@@ -6,6 +6,7 @@
 
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { buildApiUrl } from '@/utils/api';
 
 // File upload configuration
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -129,7 +130,7 @@ export const uploadSubmissionFile = async (
     const base64Data = await fileToBase64(file);
 
     // Send to backend API
-    const response = await fetch('/api/upload/submission-file', {
+    const response = await fetch(buildApiUrl('upload/submission-file'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
