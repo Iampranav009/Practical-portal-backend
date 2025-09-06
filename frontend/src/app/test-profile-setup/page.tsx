@@ -161,7 +161,7 @@ export default function TestProfileSetupPage() {
           <CardTitle>Test Instructions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p>1. Click "Open Setup Modal" to test the profile setup flow</p>
+          <p>1. Click &quot;Open Setup Modal&quot; to test the profile setup flow</p>
           <p>2. Fill in the required fields based on your role</p>
           <p>3. Complete the setup and verify the status updates</p>
           <p>4. Try accessing other parts of the app to ensure the flow works</p>

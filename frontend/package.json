@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:vercel": "next build && next export",
+    "deploy:vercel": "vercel --prod",
+    "deploy:preview": "vercel",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -23,6 +27,7 @@
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.23",
     "firebase": "^12.2.1",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",

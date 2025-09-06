@@ -209,9 +209,9 @@ export default function TestRateLimitingPage() {
           </div>
           
           <div className="text-sm text-muted-foreground">
-            <p>• Click "Test Profile Check" to make a profile completion check</p>
+            <p>• Click &quot;Test Profile Check&quot; to make a profile completion check</p>
             <p>• Try clicking multiple times quickly to test rate limiting</p>
-            <p>• Use "Clear Rate Limit" to reset the rate limiter for testing</p>
+            <p>• Use &quot;Clear Rate Limit&quot; to reset the rate limiter for testing</p>
           </div>
         </CardContent>
       </Card>
@@ -222,11 +222,11 @@ export default function TestRateLimitingPage() {
           <CardTitle>How to Test</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p>1. Make sure you're logged in</p>
-          <p>2. Click "Test Profile Check" multiple times quickly</p>
+          <p>1. Make sure you&apos;re logged in</p>
+          <p>2. Click &quot;Test Profile Check&quot; multiple times quickly</p>
           <p>3. After 5 calls in 30 seconds, you should see rate limiting</p>
-          <p>4. Wait 30 seconds or click "Clear Rate Limit" to reset</p>
-          <p>5. Verify that the error "Too many API requests" no longer appears</p>
+          <p>4. Wait 30 seconds or click &quot;Clear Rate Limit&quot; to reset</p>
+          <p>5. Verify that the error &quot;Too many API requests&quot; no longer appears</p>
         </CardContent>
       </Card>
     </div>
