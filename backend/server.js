@@ -93,6 +93,7 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   'http://localhost:3000',
   'https://practicalportal.vercel.app',
+  'https://practicalportal.vercel.app/', // Include both with and without trailing slash
   process.env.FRONTEND_URL,
   process.env.CORS_ORIGIN
 ].filter(Boolean); // Remove any undefined values
@@ -105,12 +106,24 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin)) {
+    // In development, allow all origins for easier testing
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ CORS allowing origin (development):', origin);
+      return callback(null, true);
+    }
+    
+    // Normalize origin by removing trailing slash for comparison
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowedOrigins = allowedOrigins.map(orig => orig.replace(/\/$/, ''));
+    
+    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
       console.log('✅ CORS allowing origin:', origin);
       return callback(null, true);
     }
     
     console.log('❌ CORS blocked origin:', origin);
+    console.log('❌ Normalized origin:', normalizedOrigin);
+    console.log('❌ Allowed normalized origins:', normalizedAllowedOrigins);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -133,12 +146,24 @@ const io = new Server(server, {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       
-      if (allowedOrigins.includes(origin)) {
+      // In development, allow all origins for easier testing
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Socket.IO CORS allowing origin (development):', origin);
+        return callback(null, true);
+      }
+      
+      // Normalize origin by removing trailing slash for comparison
+      const normalizedOrigin = origin.replace(/\/$/, '');
+      const normalizedAllowedOrigins = allowedOrigins.map(orig => orig.replace(/\/$/, ''));
+      
+      if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
         console.log('✅ Socket.IO CORS allowing origin:', origin);
         return callback(null, true);
       }
       
       console.log('❌ Socket.IO CORS blocked origin:', origin);
+      console.log('❌ Normalized origin:', normalizedOrigin);
+      console.log('❌ Allowed normalized origins:', normalizedAllowedOrigins);
       return callback(new Error('Not allowed by CORS'));
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
