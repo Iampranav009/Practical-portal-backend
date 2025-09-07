@@ -89,92 +89,66 @@ const server = http.createServer(app);
 // Trust proxy for proper IP detection and rate limiting
 app.set('trust proxy', 1);
 
-// GODLY CORS CONFIGURATION - BULLETPROOF SOLUTION
-console.log('🔥 Initializing GODLY CORS configuration...');
+// ROBUST CORS CONFIGURATION - Clean and Professional
+console.log('🔧 Initializing robust CORS configuration...');
 
-// Define allowed origins with all possible variations
+// Define allowed origins (exactly as specified - no trailing slashes)
 const allowedOrigins = [
-  'http://localhost:3000',
   'https://practicalportal.vercel.app',
-  'https://practicalportal.vercel.app/',
-  process.env.FRONTEND_URL,
-  process.env.CORS_ORIGIN
-].filter(Boolean);
+  'http://localhost:3000'
+];
 
 console.log('🌐 Allowed CORS origins:', allowedOrigins);
 
-// BULLETPROOF CORS MIDDLEWARE - This will work 100%
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  console.log('🔍 Request origin:', origin);
-  console.log('🔍 Request method:', req.method);
-  console.log('🔍 Request path:', req.path);
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log('✈️ Handling preflight request');
-    
-    // Allow all origins for preflight in production (we'll validate in actual requests)
-    if (origin) {
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
-      res.header('Access-Control-Max-Age', '86400'); // 24 hours
-      
-      console.log('✅ Preflight CORS headers set for origin:', origin);
-      return res.status(200).end();
+// CORS configuration with proper origin normalization
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      console.log('✅ CORS allowing request with no origin');
+      return callback(null, true);
     }
-  }
-  
-  // Handle actual requests
-  if (origin) {
-    // Check if origin is allowed (normalize for comparison)
+    
+    // Normalize origin by removing trailing slash
     const normalizedOrigin = origin.replace(/\/$/, '');
-    const normalizedAllowedOrigins = allowedOrigins.map(orig => orig.replace(/\/$/, ''));
     
-    const isAllowed = normalizedAllowedOrigins.includes(normalizedOrigin) || 
-                     process.env.NODE_ENV === 'development' ||
-                     origin.includes('practicalportal.vercel.app') ||
-                     origin.includes('localhost');
-    
-    if (isAllowed) {
-      // Set the EXACT origin that was requested
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
-      
-      console.log('✅ GODLY CORS headers set for origin:', origin);
-    } else {
-      console.log('❌ CORS blocked origin:', origin);
-      console.log('❌ Normalized origin:', normalizedOrigin);
-      console.log('❌ Allowed origins:', normalizedAllowedOrigins);
+    // Check if normalized origin is in allowed list
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('✅ CORS allowing origin:', origin, '-> normalized:', normalizedOrigin);
+      return callback(null, origin); // Return exact origin as requested
     }
-  }
-  
-  next();
-});
-
-// Backup CORS configuration (simplified)
-app.use(cors({
-  origin: true, // Allow all origins - we handle validation above
+    
+    // Development mode - allow localhost variations
+    if (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost')) {
+      console.log('✅ CORS allowing localhost origin (development):', origin);
+      return callback(null, origin);
+    }
+    
+    console.log('❌ CORS blocked origin:', origin, '-> normalized:', normalizedOrigin);
+    return callback(new Error('Not allowed by CORS policy'));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
+    'Content-Type',
+    'Authorization',
     'X-Requested-With',
     'Accept',
     'Origin',
     'Access-Control-Request-Method',
     'Access-Control-Request-Headers'
   ],
-  optionsSuccessStatus: 200
-}));
+  optionsSuccessStatus: 200,
+  maxAge: 86400 // 24 hours
+};
 
-// GODLY Socket.IO CORS Configuration
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+// Socket.IO CORS Configuration (matching Express CORS)
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
@@ -186,28 +160,28 @@ const io = new Server(server, {
         return callback(null, true);
       }
       
-      // GODLY Socket.IO CORS - Allow all practicalportal.vercel.app variations
-      const isAllowed = origin.includes('practicalportal.vercel.app') ||
-                       origin.includes('localhost') ||
-                       process.env.NODE_ENV === 'development' ||
-                       allowedOrigins.some(allowed => {
-                         const normalizedOrigin = origin.replace(/\/$/, '');
-                         const normalizedAllowed = allowed.replace(/\/$/, '');
-                         return normalizedOrigin === normalizedAllowed;
-                       });
+      // Normalize origin by removing trailing slash
+      const normalizedOrigin = origin.replace(/\/$/, '');
       
-      if (isAllowed) {
-        console.log('✅ Socket.IO GODLY CORS allowing origin:', origin);
+      // Check if normalized origin is in allowed list
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        console.log('✅ Socket.IO allowing origin:', origin, '-> normalized:', normalizedOrigin);
         return callback(null, origin); // Return exact origin
       }
       
-      console.log('❌ Socket.IO CORS blocked origin:', origin);
-      return callback(new Error('Not allowed by Socket.IO CORS'));
+      // Development mode - allow localhost variations
+      if (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost')) {
+        console.log('✅ Socket.IO allowing localhost origin (development):', origin);
+        return callback(null, origin);
+      }
+      
+      console.log('❌ Socket.IO CORS blocked origin:', origin, '-> normalized:', normalizedOrigin);
+      return callback(new Error('Not allowed by Socket.IO CORS policy'));
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
+      'Content-Type',
+      'Authorization',
       'X-Requested-With',
       'Accept',
       'Origin',
@@ -730,6 +704,46 @@ app.post('/health/reset-circuit-breaker', (req, res) => {
       error: error.message
     });
   }
+});
+
+// CORS debug endpoint
+app.get('/api/health/cors', (req, res) => {
+  const origin = req.headers.origin;
+  const normalizedOrigin = origin ? origin.replace(/\/$/, '') : null;
+  
+  res.json({
+    success: true,
+    message: 'CORS debug information',
+    timestamp: new Date().toISOString(),
+    request: {
+      origin: origin,
+      normalizedOrigin: normalizedOrigin,
+      method: req.method,
+      path: req.path,
+      userAgent: req.headers['user-agent']
+    },
+    cors: {
+      allowedOrigins: allowedOrigins,
+      isOriginAllowed: origin ? allowedOrigins.includes(normalizedOrigin) : false,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+        'Access-Control-Request-Method',
+        'Access-Control-Request-Headers'
+      ]
+    },
+    headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers'
+    }
+  });
 });
 
 // Make Socket.IO instance available to routes

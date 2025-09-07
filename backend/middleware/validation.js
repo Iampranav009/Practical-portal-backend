@@ -489,6 +489,9 @@ const setSecurityHeaders = (req, res, next) => {
   // Referrer policy
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   
+  // Fix COOP for OAuth popup flows - allow popups to communicate with opener
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  
   // Content Security Policy
   res.setHeader('Content-Security-Policy', 
     "default-src 'self'; " +
