@@ -43,7 +43,8 @@ const validateEnvironment = () => {
 // Validate environment variables before proceeding
 validateEnvironment();
 
-const { testConnection, initializeTables } = require('./db/connection');
+const { testConnection, initializeTables, monitorConnections } = require('./db/connection');
+const { initializeDatabaseWithCleanup } = require('./utils/connection-reset');
 const { apiRateLimit, setSecurityHeaders, sanitizeInput } = require('./middleware/validation');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
@@ -94,12 +95,30 @@ app.use('/api', apiRateLimit);
 app.use(sanitizeInput);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Practical Portal API is running',
-    timestamp: new Date().toISOString()
-  });
+app.get('/health', async (req, res) => {
+  const { checkConnectionHealth, getPoolStats } = require('./utils/db-utils');
+  
+  try {
+    const dbHealthy = await checkConnectionHealth();
+    const poolStats = getPoolStats();
+    
+    res.json({
+      success: true,
+      message: 'Practical Portal API is running',
+      timestamp: new Date().toISOString(),
+      database: {
+        healthy: dbHealthy,
+        poolStats: poolStats
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Health check failed',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 // Make Socket.IO instance available to routes
@@ -175,6 +194,25 @@ app.use('*', (req, res) => {
  */
 const startServer = async () => {
   try {
+    // Initialize database with connection cleanup
+    const dbInitialized = await initializeDatabaseWithCleanup();
+    
+    if (!dbInitialized) {
+      console.error('❌ Database initialization failed.');
+      console.log('🔄 Starting server in fallback mode (limited functionality)...');
+      console.log('💡 Database features will be unavailable until connections are freed');
+      
+      // Start server anyway in fallback mode
+      server.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT} (FALLBACK MODE)`);
+        console.log(`📊 Health check: http://localhost:${PORT}/health`);
+        console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
+        console.log(`⚡ Socket.IO enabled for real-time updates`);
+        console.log(`⚠️ Database features disabled due to connection limit`);
+      });
+      return;
+    }
+    
     // Test database connection
     await testConnection();
     
@@ -187,6 +225,10 @@ const startServer = async () => {
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
       console.log(`⚡ Socket.IO enabled for real-time updates`);
+      
+      // Start connection monitoring
+      monitorConnections();
+      console.log(`🔍 Connection monitoring enabled`);
     });
     
   } catch (error) {
@@ -196,15 +238,37 @@ const startServer = async () => {
 };
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n🛑 Received SIGINT. Gracefully shutting down...');
-  process.exit(0);
-});
+const gracefulShutdown = async (signal) => {
+  console.log(`\n🛑 Received ${signal}. Gracefully shutting down...`);
+  
+  try {
+    // Close the HTTP server
+    if (server) {
+      await new Promise((resolve) => {
+        server.close(() => {
+          console.log('✅ HTTP server closed');
+          resolve();
+        });
+      });
+    }
+    
+    // Close database connections
+    const { pool } = require('./db/connection');
+    if (pool) {
+      await pool.end();
+      console.log('✅ Database connections closed');
+    }
+    
+    console.log('✅ Graceful shutdown completed');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error during shutdown:', error.message);
+    process.exit(1);
+  }
+};
 
-process.on('SIGTERM', () => {
-  console.log('\n🛑 Received SIGTERM. Gracefully shutting down...');
-  process.exit(0);
-});
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 // Start the server
 startServer();

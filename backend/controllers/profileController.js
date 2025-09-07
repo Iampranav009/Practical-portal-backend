@@ -1,4 +1,5 @@
 const { pool } = require('../db/connection');
+const { getUserProfile } = require('../utils/db-utils');
 
 /**
  * Profile Controller
@@ -14,11 +15,8 @@ const getProfile = async (req, res) => {
   try {
     const { userId, role } = req.user; // From JWT middleware
 
-    // Get basic user information
-    const [users] = await pool.execute(
-      'SELECT user_id, name, email, role FROM users WHERE user_id = ?',
-      [userId]
-    );
+    // Get user profile with retry logic
+    const users = await getUserProfile(userId);
 
     if (users.length === 0) {
       return res.status(404).json({

@@ -360,7 +360,6 @@ const getExploreSubmissions = async (req, res) => {
       JOIN batches b ON s.batch_id = b.batch_id
       LEFT JOIN teacher_profiles tp ON b.teacher_id = tp.user_id
       LEFT JOIN student_profiles sp ON u.user_id = sp.user_id AND u.role = 'student'
-      LEFT JOIN teacher_profiles tp ON u.user_id = tp.user_id AND u.role = 'teacher'
       WHERE s.status = 'accepted'
     `;
 
