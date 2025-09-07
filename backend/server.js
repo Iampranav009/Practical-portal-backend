@@ -149,6 +149,30 @@ app.use(cors(corsOptions));
 // Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
 
+// Override CORS headers to ensure exact origin match (no trailing slash)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  if (origin) {
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
+    // Check if this origin should be allowed
+    if (allowedOrigins.includes(normalizedOrigin) || 
+        (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost'))) {
+      
+      // Override the CORS header to ensure exact match
+      res.header('Access-Control-Allow-Origin', normalizedOrigin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+      
+      console.log('🔧 CORS override - Origin:', origin, '-> Normalized:', normalizedOrigin);
+    }
+  }
+  
+  next();
+});
+
 // Socket.IO CORS Configuration (matching Express CORS)
 const io = new Server(server, {
   cors: {
