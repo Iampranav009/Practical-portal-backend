@@ -118,7 +118,8 @@ app.use(cors({
     
     if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
       console.log('✅ CORS allowing origin:', origin);
-      return callback(null, true);
+      // Return the exact origin that was requested, not the normalized version
+      return callback(null, origin);
     }
     
     console.log('❌ CORS blocked origin:', origin);
@@ -140,6 +141,29 @@ app.use(cors({
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
+// Additional CORS headers as fallback
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Check if origin is allowed (same logic as CORS config)
+  if (origin) {
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowedOrigins = allowedOrigins.map(orig => orig.replace(/\/$/, ''));
+    
+    if (normalizedAllowedOrigins.includes(normalizedOrigin) || process.env.NODE_ENV === 'development') {
+      // Set the exact origin that was requested
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+      
+      console.log('✅ Manual CORS header set for origin:', origin);
+    }
+  }
+  
+  next();
+});
+
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
@@ -158,7 +182,8 @@ const io = new Server(server, {
       
       if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
         console.log('✅ Socket.IO CORS allowing origin:', origin);
-        return callback(null, true);
+        // Return the exact origin that was requested, not the normalized version
+        return callback(null, origin);
       }
       
       console.log('❌ Socket.IO CORS blocked origin:', origin);
