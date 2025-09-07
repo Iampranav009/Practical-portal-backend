@@ -1,4 +1,5 @@
 const { pool } = require('../db/connection');
+const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
 const { getTeacherNotifications: getTeacherNotificationsData } = require('../utils/db-utils');
 const { sendEmailNotification } = require('../utils/emailService');
 
@@ -23,6 +24,16 @@ const getTeacherNotifications = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid teacher ID'
+      });
+    }
+
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
       });
     }
 

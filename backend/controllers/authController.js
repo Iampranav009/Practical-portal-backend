@@ -1,4 +1,5 @@
 const { pool } = require('../db/connection');
+const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
 const jwt = require('jsonwebtoken');
 
 /**
@@ -31,8 +32,18 @@ const registerUser = async (req, res) => {
       });
     }
 
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
+
     // Check if user already exists
-    const [existingUser] = await pool.execute(
+    const existingUser = await executeQuery(
       'SELECT user_id FROM users WHERE firebase_uid = ? OR email = ?',
       [firebaseUid, email]
     );
@@ -45,7 +56,7 @@ const registerUser = async (req, res) => {
     }
 
     // Insert new user - handle undefined values by converting to null
-    const [result] = await pool.execute(
+    const result = await executeQuery(
       'INSERT INTO users (firebase_uid, name, email, role, photo_url) VALUES (?, ?, ?, ?, ?)',
       [firebaseUid, name, email, role, photoURL || null]
     );
@@ -54,12 +65,12 @@ const registerUser = async (req, res) => {
 
     // Create role-specific profile table entry
     if (role === 'teacher') {
-      await pool.execute(
+      await executeQuery(
         'INSERT INTO teacher_profiles (user_id, employee_id) VALUES (?, ?)',
         [userId, employeeId || null]
       );
     } else {
-      await pool.execute(
+      await executeQuery(
         'INSERT INTO student_profiles (user_id, roll_number) VALUES (?, ?)',
         [userId, rollNumber || null]
       );
@@ -110,7 +121,17 @@ const getUserByFirebaseUid = async (req, res) => {
   try {
     const { firebaseUid } = req.params;
 
-    const [users] = await pool.execute(
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
+
+    const users = await executeQuery(
       'SELECT user_id, firebase_uid, name, email, role, created_at FROM users WHERE firebase_uid = ?',
       [firebaseUid]
     );
@@ -172,8 +193,18 @@ const googleSignIn = async (req, res) => {
       });
     }
 
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
+
     // Check if user already exists
-    let [existingUser] = await pool.execute(
+    let existingUser = await executeQuery(
       'SELECT user_id, role FROM users WHERE firebase_uid = ?',
       [firebaseUid]
     );
@@ -185,13 +216,13 @@ const googleSignIn = async (req, res) => {
       userId = existingUser[0].user_id;
       
       // Update user information
-      await pool.execute(
+      await executeQuery(
         'UPDATE users SET name = ?, email = ?, photo_url = ? WHERE firebase_uid = ?',
         [name, email, photoURL || null, firebaseUid]
       );
     } else {
       // Create new user
-      const [result] = await pool.execute(
+      const result = await executeQuery(
         'INSERT INTO users (firebase_uid, name, email, role, photo_url) VALUES (?, ?, ?, ?, ?)',
         [firebaseUid, name, email, role, photoURL || null]
       );
@@ -200,12 +231,12 @@ const googleSignIn = async (req, res) => {
 
       // Create role-specific profile table entry
       if (role === 'teacher') {
-        await pool.execute(
+        await executeQuery(
           'INSERT INTO teacher_profiles (user_id) VALUES (?)',
           [userId]
         );
       } else {
-        await pool.execute(
+        await executeQuery(
           'INSERT INTO student_profiles (user_id) VALUES (?)',
           [userId]
         );

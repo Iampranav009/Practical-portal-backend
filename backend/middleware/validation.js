@@ -10,6 +10,7 @@ const { body, param, query, validationResult } = require('express-validator');
 /**
  * Rate limiting middleware
  * Prevents brute force attacks and API abuse
+ * Enhanced with robust error handling and proxy support
  */
 const createRateLimit = (windowMs, max, message = 'Too many requests') => {
   return rateLimit({
@@ -26,6 +27,55 @@ const createRateLimit = (windowMs, max, message = 'Too many requests') => {
     skipSuccessfulRequests: false,
     // Skip rate limiting for failed requests (optional)
     skipFailedRequests: false,
+    // Fix for ERR_ERL_UNEXPECTED_X_FORWARDED_FOR error
+    trustProxy: true, // Trust proxy headers for proper IP detection
+    // Custom key generator to handle X-Forwarded-For headers properly
+    keyGenerator: (req) => {
+      try {
+        // Get the real IP address from various headers
+        const forwarded = req.headers['x-forwarded-for'];
+        const realIp = req.headers['x-real-ip'];
+        const remoteAddress = req.connection?.remoteAddress || req.socket?.remoteAddress;
+        
+        // Handle X-Forwarded-For header properly (can be comma-separated list)
+        if (forwarded && typeof forwarded === 'string') {
+          // Take the first IP in the list (original client IP)
+          const firstIp = forwarded.split(',')[0].trim();
+          // Validate IP format
+          if (firstIp && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(firstIp)) {
+            return firstIp;
+          }
+        }
+        
+        // Fallback to other headers or connection IP
+        if (realIp && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(realIp)) {
+          return realIp;
+        }
+        
+        if (remoteAddress && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(remoteAddress)) {
+          return remoteAddress;
+        }
+        
+        // Final fallback
+        return req.ip || 'unknown';
+      } catch (error) {
+        console.error('Rate limiting keyGenerator error:', error.message);
+        return req.ip || 'unknown';
+      }
+    },
+    // Enhanced error handling
+    handler: (req, res) => {
+      console.log(`Rate limit exceeded for IP: ${req.ip}`);
+      res.status(429).json({
+        success: false,
+        message,
+        retryAfter: Math.ceil(windowMs / 1000)
+      });
+    },
+    // Skip function for health checks and static files
+    skip: (req) => {
+      return req.url === '/health' || req.url === '/health/db' || req.url.startsWith('/static/');
+    }
   });
 };
 

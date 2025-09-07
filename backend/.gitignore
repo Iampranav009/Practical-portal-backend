@@ -59,3 +59,8 @@ jspm_packages/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Build outputs
+dist/
+build/
+

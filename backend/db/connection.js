@@ -12,13 +12,33 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD || '',
   database: process.env.DB_NAME || process.env.DATABASE_NAME || 'practical_portal',
   waitForConnections: true,
-  connectionLimit: 5, // Reduced from 10 to 5 to stay well under the 50 limit
+  connectionLimit: 12, // Increased for paid Hostinger MySQL hosting (24/7 service)
   queueLimit: 0,
-  // Connection cleanup settings
-  idleTimeout: 300000, // 5 minutes
-  maxIdle: 2, // Maximum idle connections
-  // SSL configuration for production
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  // Connection cleanup settings - optimized for 24/7 paid hosting
+  idleTimeout: 600000, // 10 minutes - longer idle time for paid hosting
+  maxIdle: 6, // More idle connections for paid hosting
+  // Timeout settings optimized for paid hosting
+  connectTimeout: 20000, // 20 seconds - faster for paid hosting
+  // Connection keepalive settings for paid hosting
+  keepAliveInitialDelay: 0,
+  enableKeepAlive: true,
+  // SSL configuration for production (Hostinger supports SSL)
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // Additional settings for stability and performance
+  charset: 'utf8mb4',
+  timezone: 'Z',
+  supportBigNumbers: true,
+  bigNumberStrings: true,
+  dateStrings: false,
+  debug: false,
+  trace: false,
+  // Performance optimizations for paid hosting
+  multipleStatements: false, // Security best practice
+  namedPlaceholders: true, // Better performance
+  typeCast: true, // Automatic type casting
+  flags: ['-FOUND_ROWS'], // Optimize for Hostinger
+  compress: false, // Disable compression for better performance
+  rowsAsArray: false // Return objects instead of arrays
 });
 
 /**
@@ -63,13 +83,27 @@ const monitorConnections = () => {
       console.log('📊 Connection Pool Stats:', poolStats);
       
       // Warn if approaching connection limit
-      if (poolStats.totalConnections > 3) {
+      if (poolStats.totalConnections > 1) {
         console.warn('⚠️ High connection usage detected:', poolStats);
       }
     } catch (error) {
       console.log('📊 Connection monitoring temporarily unavailable:', error.message);
     }
-  }, 30000); // Check every 30 seconds
+  }, 60000); // Check every 60 seconds (less frequent)
+};
+
+/**
+ * Gracefully close all connections in the pool
+ * Used during server shutdown or when resetting connections
+ */
+const closePool = async () => {
+  try {
+    console.log('🔄 Closing database connection pool...');
+    await pool.end();
+    console.log('✅ Database connection pool closed');
+  } catch (error) {
+    console.error('❌ Error closing connection pool:', error.message);
+  }
 };
 
 /**
@@ -322,6 +356,7 @@ module.exports = {
   testConnection,
   initializeTables,
   monitorConnections,
+  closePool,
   safeQuery,
   safeTransaction
 };

@@ -530,8 +530,11 @@ const getStudentBatches = async (req, res) => {
       });
     }
 
+    // Use enhanced database connection for better error handling
+    const { executeQuery } = require('../utils/enhanced-db-connection');
+    
     // Get all batches joined by this student with member count
-    const [batches] = await pool.execute(`
+    const batches = await executeQuery(`
       SELECT 
         b.batch_id,
         b.name,
@@ -553,6 +556,15 @@ const getStudentBatches = async (req, res) => {
       ORDER BY bm.joined_at DESC
     `, [userId]);
 
+    // Handle database timeout gracefully
+    if (batches === null) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again in a moment.',
+        retryAfter: 30
+      });
+    }
+
     res.json({
       success: true,
       data: batches
@@ -560,6 +572,16 @@ const getStudentBatches = async (req, res) => {
 
   } catch (error) {
     console.error('Get student batches error:', error);
+    
+    // Handle specific database errors
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again in a moment.',
+        retryAfter: 30
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -580,6 +602,17 @@ const getAllBatches = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: 'Only students and teachers can browse batches'
+      });
+    }
+
+    // Check if database is available
+    const { isDatabaseAvailable } = require('../utils/enhanced-db-connection');
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
       });
     }
 
@@ -629,6 +662,13 @@ const getAllBatches = async (req, res) => {
             is_own_batch: isOwnBatch // Mark if it's the teacher's own batch
           };
         }
+        
+        // Default return for any other role
+        return {
+          ...batch,
+          is_member: false,
+          can_join: false
+        };
       })
     );
 

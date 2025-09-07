@@ -134,10 +134,19 @@ const getBatchSubmissions = async (batchId, page = 1, limit = 20) => {
  */
 const checkConnectionHealth = async () => {
   try {
-    await safeQuery('SELECT 1 as health_check');
-    return true;
+    // Use the robust connection approach
+    const { isDatabaseAvailable } = require('./robust-db-connection');
+    const isHealthy = await isDatabaseAvailable();
+    
+    if (isHealthy) {
+      console.log('✅ Database health check passed');
+      return true;
+    } else {
+      console.log('❌ Database health check failed');
+      return false;
+    }
   } catch (error) {
-    console.error('Database health check failed:', error.message);
+    console.error('❌ Database health check error:', error.message);
     return false;
   }
 };
@@ -147,12 +156,22 @@ const checkConnectionHealth = async () => {
  * @returns {Object} Pool statistics
  */
 const getPoolStats = () => {
-  return {
-    totalConnections: pool.pool._allConnections.length,
-    freeConnections: pool.pool._freeConnections.length,
-    acquiringConnections: pool.pool._acquiringConnections.length,
-    queuedRequests: pool.pool._connectionQueue.length
-  };
+  try {
+    return {
+      totalConnections: pool.pool?._allConnections?.length || 0,
+      freeConnections: pool.pool?._freeConnections?.length || 0,
+      acquiringConnections: pool.pool?._acquiringConnections?.length || 0,
+      queuedRequests: pool.pool?._connectionQueue?.length || 0
+    };
+  } catch (error) {
+    console.error('Error getting pool stats:', error.message);
+    return {
+      totalConnections: 0,
+      freeConnections: 0,
+      acquiringConnections: 0,
+      queuedRequests: 0
+    };
+  }
 };
 
 module.exports = {

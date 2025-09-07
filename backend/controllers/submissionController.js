@@ -1,4 +1,5 @@
 const { pool } = require('../db/connection');
+const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
 
 /**
  * Submission Controller

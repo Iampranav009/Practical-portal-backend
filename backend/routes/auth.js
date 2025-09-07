@@ -4,6 +4,27 @@ const { authRateLimit, validateRegistration, validateLogin } = require('../middl
 
 const router = express.Router();
 
+// CORS handling for auth routes specifically
+router.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log('🔐 Auth route CORS - Origin:', origin);
+  
+  // Set CORS headers for all auth routes
+  res.header('Access-Control-Allow-Origin', origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Max-Age', '86400');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('🔄 Auth preflight request for:', req.url);
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
 /**
  * Authentication Routes
  * Handles user registration and authentication endpoints
