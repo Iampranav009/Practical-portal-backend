@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, LucideIcon, ArrowLeft, User, GraduationCap } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, LucideIcon, ArrowLeft, User, GraduationCap, Home } from "lucide-react";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { UserRole } from "@/contexts/auth-context";
@@ -60,10 +60,10 @@ interface FormHeaderProps {
 
 const FormHeader = ({ title, subtitle }: FormHeaderProps) => (
   <div className="text-center space-y-2">
-    <h1 className="text-3xl font-bold tracking-tight text-foreground">
+    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
       {title}
     </h1>
-    <p className="text-muted-foreground">
+    <p className="text-gray-600">
       {subtitle}
     </p>
   </div>
@@ -96,19 +96,19 @@ const InputField = ({
   <div className="space-y-2">
     <label 
       htmlFor={id} 
-      className="text-sm font-medium text-foreground"
+      className="text-sm font-medium text-gray-700"
     >
       {label}
     </label>
     <div className="relative">
-      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
       <input
         id={id}
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full h-11 pl-10 pr-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-300 ${className}`}
+        className={`w-full h-11 pl-10 pr-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:border-purple-500 transition-all duration-300 ${className}`}
         required={required}
       />
     </div>
@@ -142,25 +142,25 @@ const PasswordField = ({
   <div className="space-y-2">
     <label 
       htmlFor={id} 
-      className="text-sm font-medium text-foreground"
+      className="text-sm font-medium text-gray-700"
     >
       {label}
     </label>
     <div className="relative">
-      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
       <input
         id={id}
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full h-11 pl-10 pr-10 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-300 ${className}`}
+        className={`w-full h-11 pl-10 pr-10 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:border-purple-500 transition-all duration-300 ${className}`}
         required={required}
       />
       <button
         type="button"
         onClick={onTogglePassword}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-300"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-300"
         aria-label={showPassword ? "Hide password" : "Show password"}
       >
         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -179,7 +179,7 @@ interface LinkProps {
 const Link = ({ href, children, className = "" }: LinkProps) => (
   <a
     href={href}
-    className={`text-primary hover:opacity-80 font-medium transition-opacity duration-300 ${className}`}
+    className={`text-purple-600 hover:text-purple-700 font-medium transition-colors duration-300 ${className}`}
   >
     {children}
   </a>
@@ -211,7 +211,7 @@ const Button = ({
     primary: "bg-primary text-primary-foreground shadow-lg hover:opacity-90",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
     outline: "border border-border bg-background hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 text-foreground transition-all duration-200",
-    gradient: "w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-md font-semibold shadow-lg hover:opacity-90 transition-all"
+    gradient: "w-full bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 text-white py-3 rounded-md font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
   };
 
   const widthClass = fullWidth ? "w-full" : "";
@@ -236,10 +236,10 @@ interface DividerProps {
 const Divider = ({ text }: DividerProps) => (
   <div className="relative">
     <div className="absolute inset-0 flex items-center">
-      <div className="w-full border-t border-border"></div>
+      <div className="w-full border-t border-gray-300"></div>
     </div>
     <div className="relative flex justify-center text-xs uppercase">
-      <span className="bg-card px-2 text-muted-foreground">
+      <span className="bg-white px-2 text-gray-500">
         {text}
       </span>
     </div>
@@ -281,15 +281,15 @@ interface RoleButtonProps {
 const RoleButton = ({ icon: Icon, title, description, onClick }: RoleButtonProps) => (
   <button
     onClick={onClick}
-    className="w-full p-6 bg-card border border-border rounded-lg hover:bg-secondary/50 hover:border-primary/50 transition-all duration-300 group"
+    className="w-full p-6 bg-white border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-200 hover:shadow-md transition-all duration-300 group"
   >
     <div className="flex flex-col items-center text-center space-y-3">
-      <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-        <Icon className="h-8 w-8 text-primary" />
+      <div className="p-3 rounded-full bg-purple-100 group-hover:bg-purple-200 transition-colors">
+        <Icon className="h-8 w-8 text-purple-600" />
       </div>
       <div>
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <p className="text-sm text-gray-600">{description}</p>
       </div>
     </div>
   </button>
@@ -395,7 +395,7 @@ interface GradientBackgroundProps {
 
 const GradientBackground = ({ children, variant = "default" }: GradientBackgroundProps) => {
   const variants = {
-    default: "bg-gradient-to-br from-background to-secondary",
+    default: "bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800",
     light: "bg-gradient-to-br from-white via-blue-50 to-purple-50"
   };
 
@@ -403,10 +403,13 @@ const GradientBackground = ({ children, variant = "default" }: GradientBackgroun
     <div className={`hidden lg:flex flex-1 relative overflow-hidden`}>
       <div className={`absolute inset-0 ${variants[variant]}`} />
       
+      {/* Subtle overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/10" />
+      
       <div className="absolute inset-0">
-        <AnimatedBlob color="bg-purple-500/30" position="top-0 -left-4" />
-        <AnimatedBlob color="bg-cyan-500/30" position="top-0 -right-4" delay="animation-delay-2000" />
-        <AnimatedBlob color="bg-indigo-500/30" position="-bottom-8 left-20" delay="animation-delay-4000" />
+        <AnimatedBlob color="bg-purple-400/20" position="top-0 -left-4" />
+        <AnimatedBlob color="bg-indigo-400/20" position="top-0 -right-4" delay="animation-delay-2000" />
+        <AnimatedBlob color="bg-purple-500/20" position="-bottom-8 left-20" delay="animation-delay-4000" />
       </div>
 
       <GradientWave />
@@ -426,12 +429,23 @@ interface FormFooterProps {
 }
 
 const FormFooter = ({ text, linkText, linkHref }: FormFooterProps) => (
-  <p className="mt-6 text-center text-sm text-muted-foreground">
+  <p className="mt-6 text-center text-sm text-gray-600">
     {text}{" "}
     <Link href={linkHref}>
       {linkText}
     </Link>
   </p>
+);
+
+// Home Button Component
+const HomeButton = () => (
+  <Link
+    href="/"
+    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 text-sm font-medium"
+  >
+    <Home className="h-4 w-4" />
+    Back to Home
+  </Link>
 );
 
 // ============================================================================
@@ -448,8 +462,6 @@ const SignUpFlow = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [rollNumber, setRollNumber] = useState("");
-  const [employeeId, setEmployeeId] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -478,8 +490,6 @@ const SignUpFlow = () => {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setRollNumber("");
-    setEmployeeId("");
     setError("");
   };
 
@@ -553,14 +563,6 @@ const SignUpFlow = () => {
         throw new Error('Name is required');
       }
       
-      // Validate role-specific fields
-      if (role === 'student' && !rollNumber.trim()) {
-        throw new Error('Roll number is required for students');
-      }
-      if (role === 'teacher' && !employeeId.trim()) {
-        throw new Error('Employee ID is required for teachers');
-      }
-      
       // Create Firebase user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -572,9 +574,7 @@ const SignUpFlow = () => {
           firebaseUid: user.uid,
           name: name.trim(),
           email: email,
-          role: role,
-          rollNumber: role === 'student' ? rollNumber : undefined,
-          employeeId: role === 'teacher' ? employeeId : undefined
+          role: role
         })
       });
 
@@ -609,12 +609,15 @@ const SignUpFlow = () => {
    */
   const renderRoleSelection = () => (
     <div className="w-full max-w-md space-y-8">
+      <div className="flex justify-start">
+        <HomeButton />
+      </div>
       <FormHeader 
         title="Join Practical Portal"
         subtitle="Choose your role to get started"
       />
 
-      <Card className="p-6 sm:p-8 shadow-sm">
+      <Card className="p-6 sm:p-8 shadow-lg bg-white border-0">
         <div className="space-y-4">
           <RoleButton
             role="student"
@@ -636,7 +639,7 @@ const SignUpFlow = () => {
         <FormFooter 
           text="Already have an account?"
           linkText="Sign in"
-          linkHref="/auth/login"
+          linkHref={role ? `/auth/login?role=${role}` : "/auth/login"}
         />
       </Card>
     </div>
@@ -647,24 +650,27 @@ const SignUpFlow = () => {
    */
   const renderRegistrationForm = () => (
     <div className="w-full max-w-md space-y-8">
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={handleBack}
-          className="p-2 rounded-full hover:bg-secondary transition-colors"
-          aria-label="Go back to role selection"
-        >
-          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-        </button>
-        <FormHeader 
-          title={`${role === 'student' ? 'Student' : 'Teacher'} Registration`}
-          subtitle={`Create your ${role} account`}
-        />
+      <div className="flex justify-between items-start">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={handleBack}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Go back to role selection"
+          >
+            <ArrowLeft className="h-5 w-5 text-gray-600" />
+          </button>
+          <FormHeader 
+            title={`${role === 'student' ? 'Student' : 'Teacher'} Registration`}
+            subtitle={`Create your ${role} account`}
+          />
+        </div>
+        <HomeButton />
       </div>
 
-      <Card className="p-6 sm:p-8 shadow-sm">
+      <Card className="p-6 sm:p-8 shadow-lg bg-white border-0">
         <form onSubmit={handleEmailSignUp} className="space-y-6">
           {error && (
-            <div className="text-destructive text-sm text-center bg-destructive/10 p-3 rounded-md">
+            <div className="text-red-600 text-sm text-center bg-red-50 border border-red-200 p-3 rounded-md">
               {error}
             </div>
           )}
@@ -691,32 +697,6 @@ const SignUpFlow = () => {
             required
           />
 
-          {/* Role-specific fields */}
-          {role === 'student' && (
-            <InputField
-              id="rollNumber"
-              type="text"
-              label="Roll Number"
-              placeholder="Enter your roll number"
-              value={rollNumber}
-              onChange={(e) => setRollNumber(e.target.value)}
-              icon={GraduationCap}
-              required
-            />
-          )}
-
-          {role === 'teacher' && (
-            <InputField
-              id="employeeId"
-              type="text"
-              label="Employee ID"
-              placeholder="Enter your employee ID"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              icon={User}
-              required
-            />
-          )}
 
           <PasswordField
             id="password"
@@ -763,7 +743,7 @@ const SignUpFlow = () => {
         <FormFooter 
           text="Already have an account?"
           linkText="Sign in"
-          linkHref="/auth/login"
+          linkHref={role ? `/auth/login?role=${role}` : "/auth/login"}
         />
       </Card>
     </div>
@@ -772,7 +752,7 @@ const SignUpFlow = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row w-full">
       {/* Left Side - Registration Flow */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-background">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-white">
         {step === 1 ? renderRoleSelection() : renderRegistrationForm()}
       </div>
 

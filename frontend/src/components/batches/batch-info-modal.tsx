@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -71,6 +71,9 @@ export function BatchInfoModal({ isOpen, onClose, batch }: BatchInfoModalProps) 
           <DialogTitle className="text-xl font-semibold">
             Batch Information
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            View detailed information about this batch including students, assignments, and statistics
+          </DialogDescription>
         </DialogHeader>
 
         {/* Sticky Tab Navigation - stays at top */}

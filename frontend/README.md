@@ -1,291 +1,187 @@
-# Practical Portal 🎓
+# Practical Portal Frontend
 
-A comprehensive web application for managing practical sessions between students and teachers, built with Next.js, Express.js, and MySQL.
+A modern, responsive frontend for the Practical Portal - a collaborative learning platform for managing practical submissions between teachers and students.
 
-## 🟢 Phase 1 - Complete ✅
+## 🚀 Live Demo
 
-Phase 1 has been successfully implemented with the following features:
+[Deployed on Vercel](https://practical-portal-frontend.vercel.app)
 
-### ✅ Project Setup
-- **Frontend**: Next.js 15 + TailwindCSS 4 + shadcn/ui components
-- **Backend**: Express.js + MySQL with proper MVC structure
-- **Folder Structure**: Organized `/teachers` and `/students` routes with backend separation
+## ✨ Features
 
-### ✅ Authentication System
-- **Firebase Authentication** integration with role-based login
-- **JWT tokens** for backend API access
-- **User roles**: Student and Teacher with appropriate permissions
-- **Database integration**: User data stored in MySQL with Firebase UID mapping
+### 🎨 Modern UI/UX
+- **Dark/Light Theme** with system preference detection
+- **Mobile-first responsive design** optimized for all devices
+- **Modern landing page** with role selection and feature showcase
+- **Clean, intuitive navigation** with role-based access
 
-### ✅ Theme Support
-- **Dark/Light theme toggle** with system preference detection
-- **localStorage persistence** for theme preferences
-- **shadcn/ui components** with full theme support
-- **Mobile-first responsive design**
+### 🔐 Authentication
+- **Firebase Authentication** integration
+- **Role-based login** (Student/Teacher)
+- **JWT token management** for backend API access
+- **Profile completion tracking** with guided setup
 
-### ✅ Profile Management
-- **Teacher Profile Page**: Name, Email, College Name, Profile Picture
-- **Student Profile Page**: Name, Email, Year, Subject, Batch Name, Profile Picture
-- **Editable forms** with save functionality
-- **Image upload support** (ready for Firebase Storage integration)
+### 👥 User Management
+- **Teacher Dashboard** with batch management
+- **Student Dashboard** with submission tracking
+- **Profile management** with image upload support
+- **Real-time notifications** system
 
-### ✅ Navigation & UI
-- **Clean navigation bar** with theme toggle and role-based profile access
-- **Modern landing page** with role selection cards
-- **Responsive design** optimized for mobile devices
-- **Consistent UI components** using shadcn/ui
+### 📱 Responsive Design
+- **Mobile-optimized** interface
+- **Touch-friendly** interactions
+- **Progressive Web App** capabilities
+- **Cross-platform compatibility**
 
-### ✅ Database Schema
-- **Users table**: Core user data with Firebase UID mapping
-- **Teacher profiles**: Extended teacher-specific information
-- **Student profiles**: Extended student-specific information
-- **Foreign key relationships** with cascade deletion
+## 🛠️ Tech Stack
 
-## 🚀 Getting Started
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **TailwindCSS 4** - Utility-first CSS framework
+- **shadcn/ui** - Accessible UI components
+- **Firebase Auth** - Authentication service
+- **Lucide React** - Modern icon library
+- **Socket.io** - Real-time communication
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
-- MySQL 8.0+
+- npm or yarn
 - Firebase project with Authentication enabled
 
 ### Installation
 
 1. **Clone the repository**
-   \`\`\`bash
-   cd practical-portal
-   \`\`\`
+```bash
+git clone https://github.com/Iampranav009/Practical-portal-frontend.git
+cd Practical-portal-frontend
+```
 
-2. **Install Dependencies**
-   
-   **Option 1: Install all at once** (from root directory):
-   \`\`\`bash
-   npm run install:all
-   \`\`\`
-   
-   **Option 2: Install separately**
-   
-   **Frontend Setup**:
-   \`\`\`bash
-   cd frontend
-   npm install
-   \`\`\`
+2. **Install dependencies**
+```bash
+npm install
+```
 
-   **Backend Setup**:
-   \`\`\`bash
-   cd backend
-   npm install
-   \`\`\`
+3. **Environment setup**
+Create `.env.local` file:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_API_BASE_URL=your_backend_api_url
+```
 
-4. **Environment Configuration**
-   
-   **Frontend**: Create `.env.local` in the `frontend` directory:
-   \`\`\`
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   \`\`\`
+4. **Run development server**
+```bash
+npm run dev
+```
 
-   **Backend**: Create `.env` in the `backend` directory:
-   \`\`\`
-   DATABASE_HOST=localhost
-   DATABASE_USER=root
-   DATABASE_PASSWORD=your_mysql_password
-   DATABASE_NAME=practical_portal
-   JWT_SECRET=your_jwt_secret
-   PORT=5000
-   \`\`\`
-
-5. **Database Setup**
-   \`\`\`sql
-   CREATE DATABASE practical_portal;
-   \`\`\`
-
-6. **Start the applications**
-   
-   **Option 1: Start both together** (from root directory):
-   \`\`\`bash
-   npm run dev
-   \`\`\`
-   
-   **Option 2: Start separately**
-   
-   **Backend** (from `/backend` directory):
-   \`\`\`bash
-   npm run dev
-   \`\`\`
-
-   **Frontend** (from `/frontend` directory):
-   \`\`\`bash
-   npm run dev
-   \`\`\`
+5. **Open in browser**
+Visit [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Project Structure
 
-\`\`\`
-practical-portal/
-├── frontend/                   # Next.js frontend application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── teachers/profile/    # Teacher profile page
-│   │   │   ├── students/profile/    # Student profile page
-│   │   │   ├── layout.tsx          # Root layout with theme provider
-│   │   │   └── page.tsx            # Landing page
-│   │   ├── components/
-│   │   │   ├── ui/                 # shadcn/ui components
-│   │   │   ├── auth/               # Authentication forms
-│   │   │   ├── theme-provider.tsx  # Theme management
-│   │   │   ├── theme-toggle.tsx    # Theme switch button
-│   │   │   └── navigation.tsx      # Main navigation
-│   │   ├── contexts/
-│   │   │   └── auth-context.tsx    # Firebase auth context
-│   │   └── lib/
-│   │       ├── firebase.ts         # Firebase configuration
-│   │       └── utils.ts            # Utility functions
-│   ├── public/                 # Static assets
-│   ├── package.json            # Frontend dependencies
-│   └── next.config.ts          # Next.js configuration
-├── backend/                    # Express.js backend API
-│   ├── controllers/
-│   │   ├── authController.js   # Authentication logic
-│   │   └── profileController.js # Profile management
-│   ├── routes/
-│   │   ├── auth.js             # Auth routes
-│   │   └── profile.js          # Profile routes
-│   ├── middleware/
-│   │   └── auth.js             # JWT middleware
-│   ├── db/
-│   │   └── connection.js       # MySQL connection
-│   ├── server.js               # Express server
-│   └── package.json            # Backend dependencies
-└── README.md                   # Project documentation
-\`\`\`
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── auth/              # Authentication pages
+│   ├── students/          # Student-specific pages
+│   ├── teachers/          # Teacher-specific pages
+│   └── layout.tsx         # Root layout
+├── components/            # Reusable components
+│   ├── ui/               # shadcn/ui components
+│   ├── auth/             # Authentication components
+│   ├── landing/          # Landing page components
+│   └── layout/           # Layout components
+├── contexts/             # React contexts
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions
+└── utils/                # Helper functions
+```
 
-## 🔧 Technologies Used
+## 🎯 Available Scripts
 
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **TailwindCSS 4** - Utility-first CSS framework
-- **shadcn/ui** - Accessible UI components
-- **Firebase Auth** - Authentication service
-- **Lucide React** - Icon library
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript checks
 
-### Backend
-- **Express.js** - Web application framework
-- **MySQL2** - Database driver
-- **JWT** - Token-based authentication
-- **bcryptjs** - Password hashing
-- **CORS** - Cross-origin resource sharing
+## 🔧 Configuration
 
-## 🎯 Features
+### Vercel Deployment
+The project is configured for seamless Vercel deployment:
+- Optimized build settings
+- Automatic environment variable handling
+- Edge functions support
+- Global CDN distribution
 
-### Authentication
-- [x] Firebase email/password authentication
-- [x] Role-based access (Student/Teacher)
-- [x] JWT token management
-- [x] Automatic user registration in MySQL
+### Environment Variables
+Required environment variables for production:
+- `NEXT_PUBLIC_FIREBASE_*` - Firebase configuration
+- `NEXT_PUBLIC_API_BASE_URL` - Backend API URL
 
-### Profile Management
-- [x] Role-specific profile pages
-- [x] Editable profile information
-- [x] Profile picture upload support
-- [x] Form validation and error handling
+## 🎨 Theming
 
-### UI/UX
-- [x] Dark/Light theme with system detection
-- [x] Responsive mobile-first design
-- [x] Modern component library
-- [x] Accessible navigation
+The app supports both dark and light themes:
+- **System preference detection**
+- **Manual theme toggle**
+- **Persistent theme selection**
+- **Smooth theme transitions**
 
-### Backend API
-- [x] RESTful API design
-- [x] JWT authentication middleware
-- [x] MySQL database integration
-- [x] Error handling and validation
+## 📱 Mobile Features
 
-## 🔐 Database Schema
+- **Touch-optimized interface**
+- **Swipe gestures** for navigation
+- **Responsive breakpoints**
+- **Mobile-specific components**
 
-### Users Table
-\`\`\`sql
-CREATE TABLE users (
-  user_id INT AUTO_INCREMENT PRIMARY KEY,
-  firebase_uid VARCHAR(255) UNIQUE NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  role ENUM('student', 'teacher') NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-\`\`\`
+## 🔐 Security Features
 
-### Teacher Profiles Table
-\`\`\`sql
-CREATE TABLE teacher_profiles (
-  profile_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  college_name VARCHAR(255),
-  profile_picture_url VARCHAR(500),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-\`\`\`
+- **CSP headers** for XSS protection
+- **Secure authentication** with Firebase
+- **JWT token validation**
+- **Input sanitization**
 
-### Student Profiles Table
-\`\`\`sql
-CREATE TABLE student_profiles (
-  profile_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  year VARCHAR(50),
-  subject VARCHAR(255),
-  batch_name VARCHAR(100),
-  profile_picture_url VARCHAR(500),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-\`\`\`
+## 🚀 Deployment
 
-## 🧪 Testing
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-### Frontend
-Visit the pages to test functionality:
-- **Home**: `http://localhost:3000`
-- **Teacher Profile**: `http://localhost:3000/teachers/profile`
-- **Student Profile**: `http://localhost:3000/students/profile`
+### Manual Deployment
+```bash
+npm run build
+npm run start
+```
 
-### Backend API
-Test the API endpoints:
-- **Health Check**: `GET http://localhost:5000/health`
-- **Register User**: `POST http://localhost:5000/api/auth/register`
-- **Get Profile**: `GET http://localhost:5000/api/profile` (requires JWT token)
+## 🤝 Contributing
 
-## 🔄 What's Next (Phase 2)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-The foundation is now complete and ready for Phase 2 features:
-
-- [ ] Practical session management
-- [ ] Student-teacher assignment system
-- [ ] File upload and submission system
-- [ ] Real-time notifications
-- [ ] Progress tracking and analytics
-- [ ] Calendar integration
-- [ ] Batch management for teachers
-
-## 👥 Contributing
-
-This project follows clean code principles:
-- **Simple and modular** code structure
-- **Comprehensive comments** for all functions
-- **Minimal necessary changes** approach
-- **Clear naming conventions**
-
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License.
 
+## 🔗 Related
+
+- [Backend API Repository](https://github.com/Iampranav009/Practical-portal-backend)
+- [Project Documentation](https://github.com/Iampranav009/Practical-portal)
+
+## 📞 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Contact: [Your Email]
+
 ---
 
-**Note**: Make sure to create `.env.local` (frontend) and `.env` (backend) files with your actual Firebase and database credentials before running the application. See the example files for required variables.
+**Built with ❤️ for better education**

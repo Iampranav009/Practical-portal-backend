@@ -261,7 +261,7 @@ export function TeacherReviewFeed({ batchId, onSubmissionUpdated }: TeacherRevie
     }
     
     // If there's a specified code language, treat as code
-    if (submission.code_language) {
+    if (submission.code_language && submission.code_language !== 'text') {
       return 'code'
     }
     

@@ -164,17 +164,60 @@ export function RefinedBatchFeed({ batchId, refreshTrigger, onEditPost }: Refine
     let contentData = submission.content
     let language = 'text'
 
-    // Check if content looks like code (basic heuristic)
-    if (submission.content && (
+    // Check if content looks like code (improved heuristic)
+    // First check if there's a code_sandbox_link - this indicates it's definitely code
+    if (submission.code_sandbox_link) {
+      contentType = 'code'
+      language = submission.code_language || 'typescript'
+    }
+    // Check if there's a stored code_language in the database
+    else if (submission.code_language && submission.code_language !== 'text') {
+      contentType = 'code'
+      language = submission.code_language
+    }
+    // Enhanced code detection based on content patterns
+    else if (submission.content && (
+      // JavaScript/TypeScript patterns
       submission.content.includes('function') ||
       submission.content.includes('const ') ||
       submission.content.includes('let ') ||
       submission.content.includes('var ') ||
       submission.content.includes('class ') ||
       submission.content.includes('import ') ||
+      submission.content.includes('export ') ||
+      submission.content.includes('=>') ||
+      submission.content.includes('{') ||
+      submission.content.includes('}') ||
+      submission.content.includes(';') ||
+      // Python patterns
       submission.content.includes('def ') ||
+      submission.content.includes('import ') ||
+      submission.content.includes('from ') ||
+      submission.content.includes('if __name__') ||
+      // Java/C++ patterns
       submission.content.includes('public ') ||
-      submission.content.includes('private ')
+      submission.content.includes('private ') ||
+      submission.content.includes('protected ') ||
+      submission.content.includes('static ') ||
+      submission.content.includes('void ') ||
+      submission.content.includes('int ') ||
+      submission.content.includes('String ') ||
+      // HTML patterns
+      submission.content.includes('<html') ||
+      submission.content.includes('<div') ||
+      submission.content.includes('<p>') ||
+      submission.content.includes('<!DOCTYPE') ||
+      // CSS patterns
+      submission.content.includes('{') && submission.content.includes('}') && submission.content.includes(':') ||
+      // SQL patterns
+      submission.content.includes('SELECT ') ||
+      submission.content.includes('INSERT ') ||
+      submission.content.includes('UPDATE ') ||
+      submission.content.includes('DELETE ') ||
+      submission.content.includes('CREATE ') ||
+      // General code patterns (multiple lines with indentation)
+      (submission.content.split('\n').length > 3 && 
+       submission.content.split('\n').some(line => line.trim().startsWith('  ') || line.trim().startsWith('\t')))
     )) {
       contentType = 'code'
       // Use stored language from database, fallback to detection

@@ -35,6 +35,37 @@
   --sidebar-accent-foreground: 240 5.9% 10%;
   --sidebar-border: 220 13% 91%;
   --sidebar-ring: 217.2 91.2% 59.8%;
+  
+  /* Shader-inspired color palette */
+  --shader-bg-1: 240 100% 15%; /* Dark blue from shader */
+  --shader-bg-2: 280 100% 25%; /* Purple from shader */
+  --shader-line: 260 50% 50%; /* Purple line color from shader */
+  --shader-grid: 0 0% 50%; /* Gray grid color from shader */
+  --shader-accent: 260 80% 60%; /* Brighter purple accent */
+  --shader-text: 0 0% 95%; /* Light text for dark backgrounds */
+  --shader-text-muted: 0 0% 80%; /* Muted text for dark backgrounds */
+  --shader-card: 240 20% 8%; /* Dark card background */
+  --shader-card-border: 240 20% 20%; /* Card border color */
+  --shader-gradient: linear-gradient(135deg, hsl(var(--shader-bg-1)), hsl(var(--shader-bg-2)));
+  --shader-gradient-reverse: linear-gradient(135deg, hsl(var(--shader-bg-2)), hsl(var(--shader-bg-1)));
+}
+
+/* Shader gradient background utility classes */
+.shader-gradient-bg {
+  background: var(--shader-gradient);
+}
+
+.shader-gradient-dark {
+  background: #020817;
+}
+
+.shader-gradient-darker {
+  background: #020817;
+}
+
+/* Custom background color utility */
+.bg-custom-dark {
+  background-color: #020817;
 }
 
 
@@ -69,7 +100,8 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   User,
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Returns true if all required fields are filled
    * Uses caching to prevent multiple API calls
    */
-  const checkProfileCompletionStatus = async (userId: number, role: UserRole, token: string): Promise<boolean> => {
+  const checkProfileCompletionStatus = useCallback(async (userId: number, role: UserRole, token: string): Promise<boolean> => {
     const cacheKey = `${userId}-${role}`
     const now = Date.now()
     
@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       return false
     }
-  }
+  }, [profileCompletionCache])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -187,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [checkProfileCompletionStatus])
 
   /**
    * Sign in with email and password
@@ -236,6 +236,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth)
+      // Redirect to landing page after logout
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout error:', error)
       throw error

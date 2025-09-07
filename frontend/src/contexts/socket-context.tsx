@@ -27,7 +27,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Only connect when user is authenticated
     if (user) {
-      const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
+      const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
         transports: ['websocket', 'polling'],
         autoConnect: true,
         timeout: 20000,

@@ -12,7 +12,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription 
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -508,6 +509,9 @@ export default function TeacherBatchPage() {
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Edit Batch</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Edit batch details including name, description, and settings
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleEditSubmit} className="space-y-4">
                   <div>

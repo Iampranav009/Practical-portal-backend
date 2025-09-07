@@ -210,6 +210,11 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
       return 'code'
     }
     
+    // Check if there's a stored code_language in the database
+    if (submission.code_language && submission.code_language !== 'text') {
+      return 'code'
+    }
+    
     // If there's a specified code language, treat as code
     if (submission.code_language) {
       return 'code'

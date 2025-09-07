@@ -6,7 +6,7 @@ import { useSocket } from '@/contexts/socket-context'
 import { getApiBaseUrl } from '@/utils/api'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ChatInput, ChatInputTextArea, ChatInputSubmit } from '@/components/ui/chat-input'
 import { EmojiPicker } from '@/components/announcements/emoji-picker'
 import { Loader2, User, Clock, Trash2, MoreVertical, Smile, RefreshCw, Copy, X } from 'lucide-react'
@@ -283,6 +283,9 @@ export function AnnouncementModal({ isOpen, onClose, batchId }: AnnouncementModa
               </div>
               Batch Announcements
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {isTeacher ? 'Create and manage announcements for your batch' : 'View announcements from your teachers'}
+            </DialogDescription>
             <Button
               onClick={handleRefresh}
               variant="ghost"

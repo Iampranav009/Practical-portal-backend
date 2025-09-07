@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Optimize for Vercel deployment
-  output: 'standalone',
+  // output: 'standalone', // Commented out for Vercel compatibility
   
   // Optimize images for production
   images: {
@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
       'localhost', 
       'your-backend-domain.com',
       'practical-portal-backend.vercel.app',
-      'practical-portal-backend.onrender.com'
+      'practical-portal-backend.onrender.com',
+      'lh3.googleusercontent.com' // Allow Google profile pictures
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
@@ -70,6 +71,15 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
+          },
+          // Fix COOP issues with Google Auth popups
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'unsafe-none',
           },
         ],
       },

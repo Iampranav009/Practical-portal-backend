@@ -180,7 +180,6 @@ export function SidebarDrawer({ isOpen, onClose, className = "" }: SidebarDrawer
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/auth/login');
       onClose();
     } catch (error) {
       console.error('Logout error:', error);
