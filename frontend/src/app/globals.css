@@ -108,7 +108,7 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  /* transition: background-color 0.1s ease, color 0.1s ease; */
   /* Mobile-specific improvements */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -118,9 +118,9 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Ensure smooth theme transitions */
+/* Remove all transitions for instant loading */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  /* transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease; */
 }
 
 /* Light theme specific adjustments */
@@ -131,7 +131,7 @@ body {
 /* Modern sidebar hover effects - Enhanced visibility */
 .sidebar-nav-item {
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 .sidebar-nav-item:hover {
@@ -156,7 +156,7 @@ body {
 
 /* Icon hover effects - More prominent */
 .sidebar-nav-item .icon {
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */
 }
 
 .sidebar-nav-item:hover .icon {
@@ -209,7 +209,7 @@ body {
 /* Profile button hover effects - Enhanced visibility */
 .profile-button {
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
   overflow: hidden;
 }
 
@@ -292,11 +292,11 @@ body {
 }
 
 .animation-delay-2000 {
-  animation-delay: 2s;
+  animation-delay: 0s;
 }
 
 .animation-delay-4000 {
-  animation-delay: 4s;
+  animation-delay: 0s;
 }
 
 @keyframes gradient-move {

@@ -443,14 +443,15 @@ export function BatchFeed({ batchId, refreshTrigger }: BatchFeedProps) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Loading submissions...</span>
-      </div>
-    )
-  }
+  // Show content immediately - no loading delay
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center py-8">
+  //       <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+  //       <span className="ml-2 text-gray-600">Loading submissions...</span>
+  //     </div>
+  //   )
+  // }
 
   if (error) {
     return (

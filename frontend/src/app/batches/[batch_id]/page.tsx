@@ -307,17 +307,17 @@ export default function BatchDetailsPage() {
     setShowEditPostModal(true)
   }
 
-  // Loading state
-  if (loading || loadingBatch) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading batch details...</p>
-        </div>
-      </div>
-    )
-  }
+  // Show content immediately - no loading delay
+  // if (loading || loadingBatch) {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+  //         <p className="mt-4 text-muted-foreground">Loading batch details...</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   // Error state
   if (error) {

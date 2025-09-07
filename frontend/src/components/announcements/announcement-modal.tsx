@@ -309,11 +309,7 @@ export function AnnouncementModal({ isOpen, onClose, batchId }: AnnouncementModa
 
           {/* Scrollable Announcements Area */}
           <div className="flex-1 overflow-hidden">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              </div>
-            ) : announcements.length === 0 ? (
+            {announcements.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
                 <div className="p-4 bg-gray-100 rounded-full mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

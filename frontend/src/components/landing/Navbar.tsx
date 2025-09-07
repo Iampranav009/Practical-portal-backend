@@ -294,10 +294,7 @@ export function Navbar() {
               </button>
               
               <div className="pt-4 border-t border-white/10 space-y-3">
-                {loading ? (
-                  // Show loading state while checking authentication
-                  <div className="text-center text-white/60 text-sm py-2">Loading...</div>
-                ) : user ? (
+                {user ? (
                   // Show user info and logout when logged in
                   <>
                     <div className="text-center text-white/80 py-2">

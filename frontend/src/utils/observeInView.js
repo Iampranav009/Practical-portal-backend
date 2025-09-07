@@ -41,17 +41,12 @@ export const observeInView = (selector = '.js-animate', threshold = 0.15) => {
 
 /**
  * Initialize animations on page load
- * Call this after DOM is ready
+ * Call this immediately for faster loading
  */
 export const initScrollAnimations = () => {
-  // Wait for DOM to be ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      observeInView();
-    });
-  } else {
-    observeInView();
-  }
+  // Initialize immediately - no waiting for DOM ready
+  // This ensures animations start as soon as possible
+  observeInView();
 };
 
 /**

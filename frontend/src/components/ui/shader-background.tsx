@@ -14,7 +14,7 @@ const ShaderBackground = () => {
   `;
 
   // Fragment shader source code
-  const fsSource = `
+    const fsSource = `
     precision highp float;
     uniform vec2 iResolution;
     uniform float iTime;
@@ -41,7 +41,7 @@ const ShaderBackground = () => {
     const float offsetSpeed = 1.33 * overallSpeed;
     const float minOffsetSpread = 0.6;
     const float maxOffsetSpread = 2.0;
-    const int linesPerGroup = 16;
+    const int linesPerGroup = 8; // Reduced from 16 for better performance
 
     #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
     #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
@@ -154,84 +154,105 @@ const ShaderBackground = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext('webgl') as WebGLRenderingContext | null;
-    if (!gl) {
-      console.warn('WebGL not supported.');
-      return;
-    }
+    // Use requestIdleCallback for better performance - only initialize when browser is idle
+    const initShader = () => {
+      const gl = canvas.getContext('webgl') as WebGLRenderingContext | null;
+      if (!gl) {
+        console.warn('WebGL not supported.');
+        return;
+      }
 
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-    if (!shaderProgram) {
-      console.error('Failed to initialize shader program');
-      return;
-    }
-    
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    const positions = [
-      -1.0, -1.0,
-       1.0, -1.0,
-      -1.0,  1.0,
-       1.0,  1.0,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-    const programInfo = {
-      program: shaderProgram,
-      attribLocations: {
-        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      },
-      uniformLocations: {
-        resolution: gl.getUniformLocation(shaderProgram, 'iResolution'),
-        time: gl.getUniformLocation(shaderProgram, 'iTime'),
-      },
-    };
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-    };
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    const startTime = Date.now();
-    const render = () => {
-      const currentTime = (Date.now() - startTime) / 1000;
-
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-
-      gl.useProgram(programInfo.program);
-
-      gl.uniform2f(programInfo.uniformLocations.resolution, canvas.width, canvas.height);
-      gl.uniform1f(programInfo.uniformLocations.time, currentTime);
-
+      const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+      if (!shaderProgram) {
+        console.error('Failed to initialize shader program');
+        return;
+      }
+      
+      const positionBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        2,
-        gl.FLOAT,
-        false,
-        0,
-        0
-      );
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+      const positions = [
+        -1.0, -1.0,
+         1.0, -1.0,
+        -1.0,  1.0,
+         1.0,  1.0,
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      requestAnimationFrame(render);
+      const programInfo = {
+        program: shaderProgram,
+        attribLocations: {
+          vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+        },
+        uniformLocations: {
+          resolution: gl.getUniformLocation(shaderProgram, 'iResolution'),
+          time: gl.getUniformLocation(shaderProgram, 'iTime'),
+        },
+      };
+
+      const resizeCanvas = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      };
+
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      const startTime = Date.now();
+      let animationId: number;
+      
+      const render = () => {
+        const currentTime = (Date.now() - startTime) / 1000;
+
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        gl.useProgram(programInfo.program);
+
+        gl.uniform2f(programInfo.uniformLocations.resolution, canvas.width, canvas.height);
+        gl.uniform1f(programInfo.uniformLocations.time, currentTime);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(
+          programInfo.attribLocations.vertexPosition,
+          2,
+          gl.FLOAT,
+          false,
+          0,
+          0
+        );
+        gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        animationId = requestAnimationFrame(render);
+      };
+
+      // Start rendering immediately
+      animationId = requestAnimationFrame(render);
+
+      return () => {
+        window.removeEventListener('resize', resizeCanvas);
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      };
     };
 
-    requestAnimationFrame(render);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
+    // Use requestIdleCallback if available, otherwise use setTimeout with minimal delay
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(initShader, { timeout: 100 });
+    } else {
+      setTimeout(initShader, 0);
+    }
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+    <>
+      {/* Fallback background that shows immediately */}
+      <div className="fixed top-0 left-0 w-full h-full -z-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" />
+      {/* Shader canvas that loads asynchronously */}
+      <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+    </>
   );
 };
 
