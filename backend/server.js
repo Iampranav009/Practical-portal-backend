@@ -63,9 +63,18 @@ const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 const server = http.createServer(app);
+
+// Configure CORS to allow both localhost and Vercel deployment
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://practicalportal.vercel.app',
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN
+].filter(Boolean); // Remove any undefined values
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: allowedOrigins, // Use the same allowed origins as main CORS
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -80,8 +89,20 @@ app.use(setSecurityHeaders);
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.log('CORS blocked origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(cookieParser());
