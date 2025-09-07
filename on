@@ -1,0 +1,5 @@
+[33m8c5c597[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix Vercel deployment: Remove invalid function runtime configuration
+[33m947e18e[m Fix testimonials rating array error and clean up data structure
+[33m34bc019[m Add Vercel deployment guide and environment configuration
+[33m29932d4[m Initial commit: Practical Portal Frontend - Vercel ready deployment
+[33m98458ab[m fix: Configure Vercel for proper Next.js detection

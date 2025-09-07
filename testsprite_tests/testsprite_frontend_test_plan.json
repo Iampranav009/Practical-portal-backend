@@ -1,0 +1,620 @@
+[
+  {
+    "id": "TC001",
+    "title": "Firebase Authentication Success",
+    "description": "Verify that users (students and teachers) can log in successfully using valid Firebase credentials and receive valid JWT tokens with correct role claims.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid Firebase email and password for a student account"
+      },
+      {
+        "type": "action",
+        "description": "Submit login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that login is successful and JWT token is issued with student role"
+      },
+      {
+        "type": "action",
+        "description": "Repeat for a teacher account"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that login is successful and JWT token is issued with teacher role"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Firebase Authentication Failure with Invalid Credentials",
+    "description": "Verify login fails with invalid credentials and shows appropriate error messages without issuing JWT tokens.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid email and/or password"
+      },
+      {
+        "type": "action",
+        "description": "Submit login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login is denied with error message and no JWT token is issued"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Teacher Creates a Batch with Valid Data",
+    "description": "Verify a teacher can create a new batch with mandatory fields, a unique password, and that the batch is saved in the database and visible in their dashboard.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to batch creation page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid batch details including batch name, description, and a unique password"
+      },
+      {
+        "type": "action",
+        "description": "Submit batch creation form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify batch is created successfully and appears in teacher's batch list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify batch password is stored securely and unique"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Teacher Batch Creation Validation Errors",
+    "description": "Verify that batch creation fails when mandatory fields are missing or batch password is not unique, showing appropriate error messages.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to batch creation page"
+      },
+      {
+        "type": "action",
+        "description": "Submit form with missing batch name and/or missing password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors are shown for missing fields"
+      },
+      {
+        "type": "action",
+        "description": "Input batch data with a non-unique password"
+      },
+      {
+        "type": "action",
+        "description": "Submit batch creation form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error is shown for non-unique password"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Student Joins Batch with Correct Password",
+    "description": "Verify that a student can join a batch successfully using a correct invite link and batch password, and their membership is recorded in the database.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Use a valid batch invite link"
+      },
+      {
+        "type": "action",
+        "description": "Input correct batch password"
+      },
+      {
+        "type": "action",
+        "description": "Submit join batch request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify student is successfully added to batch member list in database"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify student dashboard shows the new batch"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Student Join Batch with Incorrect Password",
+    "description": "Verify that a student cannot join a batch with an incorrect password and receives an appropriate error message.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Access batch join page with valid invite link"
+      },
+      {
+        "type": "action",
+        "description": "Input incorrect batch password"
+      },
+      {
+        "type": "action",
+        "description": "Submit join batch request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify join request is denied with error message about invalid password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify student is not added as batch member in database"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Student Creates Submission with Text and File",
+    "description": "Verify that a student can create a submission with text content and attach files within allowed types and sizes, and that the submission is stored and visible in the batch feed.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to batch feed for a joined batch"
+      },
+      {
+        "type": "action",
+        "description": "Create a new submission with text content"
+      },
+      {
+        "type": "action",
+        "description": "Attach valid file attachment(s) within allowed size and type"
+      },
+      {
+        "type": "action",
+        "description": "Submit the submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify submission appears in batch feed with correct content and file links"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify submission data is correctly saved in the database"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Submission Creation Validation Errors",
+    "description": "Verify submission creation fails with invalid file types, oversized files, or empty content, showing proper error messages.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to batch submission form"
+      },
+      {
+        "type": "action",
+        "description": "Create a submission with unsupported file type"
+      },
+      {
+        "type": "action",
+        "description": "Submit the submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message about invalid file type is shown"
+      },
+      {
+        "type": "action",
+        "description": "Attach file exceeding allowed size"
+      },
+      {
+        "type": "action",
+        "description": "Submit the submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message about file size is shown"
+      },
+      {
+        "type": "action",
+        "description": "Submit a submission with no text and no file"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message about empty submission content is shown"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Teacher Reviews and Updates Submission Status",
+    "description": "Verify that a teacher can accept or reject student submissions and that status changes are reflected in real-time on both teacher and student dashboards.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to submissions feed of a batch"
+      },
+      {
+        "type": "action",
+        "description": "Select a student submission for review"
+      },
+      {
+        "type": "action",
+        "description": "Update submission status to accepted"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify status updates appear immediately on teacher dashboard feed"
+      },
+      {
+        "type": "action",
+        "description": "Login as the corresponding student in separate session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify real-time notification and updated status reflect on student dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Repeat for rejection status update"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify rejection status updates similarly reflected real-time"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Real-time Updates Reliability",
+    "description": "Verify Socket.IO delivers real-time submission status updates reliably and handles network interruptions gracefully.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher and student in separate sessions"
+      },
+      {
+        "type": "action",
+        "description": "Teacher updates submission status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify status update received immediately by student"
+      },
+      {
+        "type": "action",
+        "description": "Simulate network disconnect and reconnect for student"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify student receives missed real-time updates upon reconnection"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Role-Based Dashboard Data Accuracy",
+    "description": "Verify that teacher and student dashboards display only role-relevant data including batches, submissions, and feeds with correct counts and statuses.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as teacher"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify teacher dashboard shows their created batches and associated submissions"
+      },
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify student dashboard shows only joined batches and their submissions"
+      },
+      {
+        "type": "action",
+        "description": "Check real-time feeds update on both dashboards accordingly"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Profile Management - Edit and Image Upload Success",
+    "description": "Verify that students and teachers can successfully update their profile information including uploading profile pictures, with validation and correct persistence.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to profile management page"
+      },
+      {
+        "type": "action",
+        "description": "Edit profile fields with valid data"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid profile picture file"
+      },
+      {
+        "type": "action",
+        "description": "Submit profile updates"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile updates are saved and visible"
+      },
+      {
+        "type": "action",
+        "description": "Repeat test for teacher role"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Profile Management Validation Errors",
+    "description": "Verify validation errors occur when profile fields are invalid or file upload fails or contains invalid file types.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to profile page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid profile data (e.g., invalid email format)"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload unsupported file type as profile picture"
+      },
+      {
+        "type": "action",
+        "description": "Submit the form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate validation error messages are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Navigation System Responsiveness and Role Restrictions",
+    "description": "Verify the sidebar navigation adapts correctly on different screen sizes and restricts access to pages/features based on user role.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student on desktop viewport"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sidebar shows student-appropriate links with correct active page highlighting"
+      },
+      {
+        "type": "action",
+        "description": "Resize window to mobile viewport"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sidebar collapses and navigation remains usable and accessible"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access teacher-only pages directly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied or redirected appropriately"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "API Endpoint Error and Security Handling",
+    "description": "Verify API routes enforce authentication, role-based access, input validation, rate limiting, and return consistent error responses for invalid requests.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Make API request to protected endpoint without JWT token"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 401 Unauthorized response with proper error format"
+      },
+      {
+        "type": "action",
+        "description": "Make API request to teacher-only endpoint with student token"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 403 Forbidden response"
+      },
+      {
+        "type": "action",
+        "description": "Make API requests with invalid or malformed input"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors with status 400 and descriptive messages"
+      },
+      {
+        "type": "action",
+        "description": "Rapidly send multiple API requests to test rate limiting"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify rate limiting triggers appropriate error response and headers"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "File Upload Handling and Error Recovery",
+    "description": "Verify profile picture and submission attachment uploads correctly process valid files, provide accessible URLs, and handle storage failures gracefully.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload valid image file as profile picture"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful upload, accessible image URL, and profile update"
+      },
+      {
+        "type": "action",
+        "description": "Upload valid file as submission attachment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful file upload and submission creation"
+      },
+      {
+        "type": "action",
+        "description": "Simulate storage backend failure during file upload"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate error response and no data inconsistency occurs"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Explore Feed Search and Filter",
+    "description": "Verify users can browse public batch submissions in the Explore feed with working search and filter capabilities that return correct results.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as any user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to Explore Feed"
+      },
+      {
+        "type": "action",
+        "description": "Use search input with keywords"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify feed updates to show submissions matching keywords"
+      },
+      {
+        "type": "action",
+        "description": "Apply filters (e.g., by date, batch, or status)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify feed updates to reflect selected filters accurately"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Responsive UI Layout Across Devices",
+    "description": "Verify that all pages and components render correctly and remain usable on multiple screen sizes from mobile to desktop.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Render key pages (Login, Dashboard, Batch Management, Submission Feed) on desktop viewports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify proper layout, spacing, and visibility of UI elements"
+      },
+      {
+        "type": "action",
+        "description": "Simulate mobile viewport and render same pages"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI adapts correctly, navigation is accessible, and content is readable without scrolling horizontally"
+      }
+    ]
+  }
+]
