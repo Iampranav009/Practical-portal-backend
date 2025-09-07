@@ -115,13 +115,14 @@ const corsOptions = {
     // Check if normalized origin is in allowed list
     if (allowedOrigins.includes(normalizedOrigin)) {
       console.log('✅ CORS allowing origin:', origin, '-> normalized:', normalizedOrigin);
-      return callback(null, origin); // Return exact origin as requested
+      // Return the normalized origin (without trailing slash) to match frontend expectation
+      return callback(null, normalizedOrigin);
     }
     
     // Development mode - allow localhost variations
     if (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost')) {
       console.log('✅ CORS allowing localhost origin (development):', origin);
-      return callback(null, origin);
+      return callback(null, normalizedOrigin);
     }
     
     console.log('❌ CORS blocked origin:', origin, '-> normalized:', normalizedOrigin);
@@ -166,13 +167,13 @@ const io = new Server(server, {
       // Check if normalized origin is in allowed list
       if (allowedOrigins.includes(normalizedOrigin)) {
         console.log('✅ Socket.IO allowing origin:', origin, '-> normalized:', normalizedOrigin);
-        return callback(null, origin); // Return exact origin
+        return callback(null, normalizedOrigin); // Return normalized origin
       }
       
       // Development mode - allow localhost variations
       if (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost')) {
         console.log('✅ Socket.IO allowing localhost origin (development):', origin);
-        return callback(null, origin);
+        return callback(null, normalizedOrigin);
       }
       
       console.log('❌ Socket.IO CORS blocked origin:', origin, '-> normalized:', normalizedOrigin);
