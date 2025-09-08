@@ -23,12 +23,12 @@ async function runDatabaseUpdates() {
     console.log('   DATABASE_USER:', process.env.DATABASE_USER || 'root');
     console.log('   DATABASE_NAME:', process.env.DATABASE_NAME || 'practical_portal');
     
-    // Create database connection with your hosted MySQL details
+    // Create database connection using environment variables
     connection = await mysql.createConnection({
-      host: 'srv1741.hstgr.io',
-      user: 'u344397447_classroom',
-      password: 'Classroom@9156332109',
-      database: 'u344397447_classroom',
+      host: process.env.DATABASE_HOST || process.env.DB_HOST,
+      user: process.env.DATABASE_USER || process.env.DB_USER,
+      password: process.env.DATABASE_PASSWORD || process.env.DB_PASSWORD,
+      database: process.env.DATABASE_NAME || process.env.DB_NAME,
       multipleStatements: true
     });
 

@@ -1,0 +1,2 @@
+Paste outputs from hitting /health, /health/db/basic, /health/db/sockettest here (both local and Render shell). Include timestamps.
+

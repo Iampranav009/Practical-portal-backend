@@ -1,187 +1,230 @@
-# Practical Portal Frontend
+# Practical Portal Backend
 
-A modern, responsive frontend for the Practical Portal - a collaborative learning platform for managing practical submissions between teachers and students.
+A Node.js/Express.js backend API for the Practical Portal collaborative learning platform.
 
-## 🚀 Live Demo
+## Features
 
-[Deployed on Vercel](https://practical-portal-frontend.vercel.app)
+- **User Authentication**: Firebase-based authentication with JWT tokens
+- **Role-based Access**: Separate interfaces for teachers and students
+- **Batch Management**: Create and manage classroom batches
+- **Submission System**: Students can submit practical work with file attachments
+- **Real-time Notifications**: Socket.IO integration for live updates
+- **Announcements**: Teachers can post announcements to batches
+- **Profile Management**: User profile management with role-specific fields
+- **File Upload**: Base64 image upload support for profile pictures
 
-## ✨ Features
+## Tech Stack
 
-### 🎨 Modern UI/UX
-- **Dark/Light Theme** with system preference detection
-- **Mobile-first responsive design** optimized for all devices
-- **Modern landing page** with role selection and feature showcase
-- **Clean, intuitive navigation** with role-based access
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js
+- **Database**: MySQL with mysql2 driver
+- **Authentication**: Firebase Admin SDK + JWT
+- **Real-time**: Socket.IO
+- **Security**: Helmet, CORS, Rate Limiting
+- **Validation**: Express Validator
 
-### 🔐 Authentication
-- **Firebase Authentication** integration
-- **Role-based login** (Student/Teacher)
-- **JWT token management** for backend API access
-- **Profile completion tracking** with guided setup
+## Prerequisites
 
-### 👥 User Management
-- **Teacher Dashboard** with batch management
-- **Student Dashboard** with submission tracking
-- **Profile management** with image upload support
-- **Real-time notifications** system
-
-### 📱 Responsive Design
-- **Mobile-optimized** interface
-- **Touch-friendly** interactions
-- **Progressive Web App** capabilities
-- **Cross-platform compatibility**
-
-## 🛠️ Tech Stack
-
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **TailwindCSS 4** - Utility-first CSS framework
-- **shadcn/ui** - Accessible UI components
-- **Firebase Auth** - Authentication service
-- **Lucide React** - Modern icon library
-- **Socket.io** - Real-time communication
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18.0.0 or higher
+- MySQL 5.7 or higher
 - Firebase project with Authentication enabled
 
-### Installation
+## Installation
 
 1. **Clone the repository**
-```bash
-git clone https://github.com/Iampranav009/Practical-portal-frontend.git
-cd Practical-portal-frontend
-```
+   ```bash
+   git clone https://github.com/Iampranav009/Practical-portal-backend.git
+   cd Practical-portal-backend
+   ```
 
 2. **Install dependencies**
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
-3. **Environment setup**
-Create `.env.local` file:
+3. **Environment Setup**
+   Create a `.env` file in the root directory with the following variables:
+   ```env
+   # Server Configuration
+   NODE_ENV=development
+   PORT=5000
+
+   # Database Configuration
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=your_password
+   DB_NAME=practical_portal
+
+   # JWT Configuration
+   JWT_SECRET=your_super_secure_jwt_secret_key_here
+
+   # Firebase Configuration
+   FIREBASE_PROJECT_ID=your-firebase-project-id
+   FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nyour-firebase-private-key\n-----END PRIVATE KEY-----\n
+   FIREBASE_CLIENT_EMAIL=your-firebase-client-email@your-project.iam.gserviceaccount.com
+
+   # CORS Configuration
+   FRONTEND_URL=http://localhost:3000
+   CORS_ORIGIN=http://localhost:3000
+   ```
+
+4. **Database Setup**
+   The application will automatically create the required database tables on startup.
+
+5. **Start the server**
+   ```bash
+   # Development
+   npm run dev
+
+   # Production
+   npm start
+   ```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/google-signin` - Google Sign In
+- `POST /api/auth/signin` - Email/Password Sign In
+- `GET /api/auth/user/:firebaseUid` - Get user by Firebase UID
+- `POST /api/auth/logout` - Logout user
+
+### Batches
+- `POST /api/batches/create` - Create new batch (Teacher)
+- `GET /api/batches/teacher/my-batches` - Get teacher's batches
+- `GET /api/batches/student/my-batches` - Get student's batches
+- `GET /api/batches/browse` - Browse all batches
+- `GET /api/batches/:batchId` - Get batch details
+- `PUT /api/batches/edit/:batchId` - Update batch (Teacher)
+- `DELETE /api/batches/delete/:batchId` - Delete batch (Teacher)
+- `POST /api/batches/join` - Join batch (Student)
+
+### Submissions
+- `POST /api/submissions/create` - Create submission (Student)
+- `GET /api/submissions/batch/:batchId` - Get batch submissions
+- `GET /api/submissions/my-submissions` - Get student's submissions
+- `GET /api/submissions/explore` - Get public submissions
+- `PUT /api/submissions/:submissionId/status` - Update status (Teacher)
+- `PUT /api/submissions/:submissionId/edit` - Edit submission (Student)
+- `DELETE /api/submissions/:submissionId` - Delete submission (Student)
+- `GET /api/submissions/batch/:batchId/stats` - Get batch statistics
+
+### Announcements
+- `POST /api/announcements` - Create announcement (Teacher)
+- `GET /api/announcements/batch/:batch_id` - Get batch announcements
+- `POST /api/announcements/:announcement_id/read` - Mark as read (Student)
+- `GET /api/announcements/unread-count/:batch_id` - Get unread count
+- `DELETE /api/announcements/:announcement_id` - Delete announcement (Teacher)
+
+### Notifications
+- `GET /api/notifications/teacher/:teacherId` - Get teacher notifications
+- `PUT /api/notifications/:notificationId/read` - Mark notification as read
+- `PUT /api/notifications/teacher/:teacherId/mark-all-read` - Mark all as read
+- `DELETE /api/notifications/teacher/:teacherId/delete-all` - Delete all notifications
+- `GET /api/notifications/settings/:teacherId` - Get notification settings
+- `PUT /api/notifications/settings/:teacherId` - Update notification settings
+
+### Profile
+- `GET /api/profile` - Get user profile
+- `PUT /api/profile` - Update user profile
+
+### Upload
+- `POST /api/upload/profile-picture` - Upload profile picture
+- `DELETE /api/upload/profile-picture` - Delete profile picture
+- `POST /api/upload/submission-file` - Upload submission file
+
+### Dashboard
+- `GET /api/dashboard/teacher/:id` - Get teacher analytics
+
+## Database Schema
+
+The application uses the following main tables:
+- `users` - User authentication and basic info
+- `teacher_profiles` - Teacher-specific profile data
+- `student_profiles` - Student-specific profile data
+- `batches` - Classroom/batch information
+- `batch_members` - Student enrollment in batches
+- `submissions` - Student practical submissions
+- `announcements` - Batch announcements
+- `announcement_reads` - Track announcement read status
+- `notifications` - Teacher notifications
+- `notification_settings` - Email notification preferences
+
+## Security Features
+
+- **Rate Limiting**: Prevents API abuse
+- **Input Validation**: Comprehensive input sanitization
+- **CORS Protection**: Configurable cross-origin resource sharing
+- **Security Headers**: Helmet.js for security headers
+- **JWT Authentication**: Secure token-based authentication
+- **SQL Injection Prevention**: Parameterized queries
+
+## Deployment
+
+### Render.com Deployment
+
+1. **Create a new Web Service** on Render
+2. **Connect your GitHub repository**
+3. **Configure environment variables** in Render dashboard
+4. **Set build command**: `npm install`
+5. **Set start command**: `npm start`
+
+### Environment Variables for Production
+
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_API_BASE_URL=your_backend_api_url
+NODE_ENV=production
+PORT=10000
+DB_HOST=your-production-db-host
+DB_USER=your-production-db-user
+DB_PASSWORD=your-production-db-password
+DB_NAME=your-production-db-name
+JWT_SECRET=your-production-jwt-secret
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_PRIVATE_KEY=your-firebase-private-key
+FIREBASE_CLIENT_EMAIL=your-firebase-client-email
+FRONTEND_URL=https://your-frontend-domain.com
+CORS_ORIGIN=https://your-frontend-domain.com
 ```
 
-4. **Run development server**
-```bash
-npm run dev
+### Debug and Scaling Flags
+
+- `DEBUG_DB_TIMEOUT`: set `true` temporarily to extend DB timeouts for diagnostics (default false). Remember to set back to `false` after triage.
+- `DB_POOL_LIMIT`: override pool size for stronger DB plans. Default is very small to avoid exhausting connection limits on shared hosts.
+
+Notes:
+- CORS whitelist compares normalized origins (no trailing slash). Ensure `FRONTEND_URL` is set without a trailing slash.
+- COOP header is set to `same-origin-allow-popups` to support OAuth popups.
+
+## Health Check
+
+The API provides a health check endpoint at `/health` that returns:
+- Server status
+- Database connection status
+- Connection pool statistics
+
+## Error Handling
+
+The API uses consistent error response format:
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "errors": [] // Optional validation errors
+}
 ```
 
-5. **Open in browser**
-Visit [http://localhost:3000](http://localhost:3000)
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── auth/              # Authentication pages
-│   ├── students/          # Student-specific pages
-│   ├── teachers/          # Teacher-specific pages
-│   └── layout.tsx         # Root layout
-├── components/            # Reusable components
-│   ├── ui/               # shadcn/ui components
-│   ├── auth/             # Authentication components
-│   ├── landing/          # Landing page components
-│   └── layout/           # Layout components
-├── contexts/             # React contexts
-├── hooks/                # Custom React hooks
-├── lib/                  # Utility functions
-└── utils/                # Helper functions
-```
-
-## 🎯 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript checks
-
-## 🔧 Configuration
-
-### Vercel Deployment
-The project is configured for seamless Vercel deployment:
-- Optimized build settings
-- Automatic environment variable handling
-- Edge functions support
-- Global CDN distribution
-
-### Environment Variables
-Required environment variables for production:
-- `NEXT_PUBLIC_FIREBASE_*` - Firebase configuration
-- `NEXT_PUBLIC_API_BASE_URL` - Backend API URL
-
-## 🎨 Theming
-
-The app supports both dark and light themes:
-- **System preference detection**
-- **Manual theme toggle**
-- **Persistent theme selection**
-- **Smooth theme transitions**
-
-## 📱 Mobile Features
-
-- **Touch-optimized interface**
-- **Swipe gestures** for navigation
-- **Responsive breakpoints**
-- **Mobile-specific components**
-
-## 🔐 Security Features
-
-- **CSP headers** for XSS protection
-- **Secure authentication** with Firebase
-- **JWT token validation**
-- **Input sanitization**
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Manual Deployment
-```bash
-npm run build
-npm run start
-```
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License.
+MIT License - see LICENSE file for details
 
-## 🔗 Related
+## Support
 
-- [Backend API Repository](https://github.com/Iampranav009/Practical-portal-backend)
-- [Project Documentation](https://github.com/Iampranav009/Practical-portal)
-
-## 📞 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Contact: [Your Email]
-
----
-
-**Built with ❤️ for better education**
+For support, please open an issue in the GitHub repository or contact the development team.

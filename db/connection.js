@@ -12,14 +12,33 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD || '',
   database: process.env.DB_NAME || process.env.DATABASE_NAME || 'practical_portal',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 12, // Increased for paid Hostinger MySQL hosting (24/7 service)
   queueLimit: 0,
-  // Enhanced connection configuration for better reliability
-  reconnect: true,
-  acquireTimeout: 60000,
-  timeout: 60000,
-  // SSL configuration for production
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  // Connection cleanup settings - optimized for 24/7 paid hosting
+  idleTimeout: 600000, // 10 minutes - longer idle time for paid hosting
+  maxIdle: 6, // More idle connections for paid hosting
+  // Timeout settings optimized for paid hosting
+  connectTimeout: 20000, // 20 seconds - faster for paid hosting
+  // Connection keepalive settings for paid hosting
+  keepAliveInitialDelay: 0,
+  enableKeepAlive: true,
+  // SSL configuration for production (Hostinger supports SSL)
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // Additional settings for stability and performance
+  charset: 'utf8mb4',
+  timezone: 'Z',
+  supportBigNumbers: true,
+  bigNumberStrings: true,
+  dateStrings: false,
+  debug: false,
+  trace: false,
+  // Performance optimizations for paid hosting
+  multipleStatements: false, // Security best practice
+  namedPlaceholders: true, // Better performance
+  typeCast: true, // Automatic type casting
+  flags: ['-FOUND_ROWS'], // Optimize for Hostinger
+  compress: false, // Disable compression for better performance
+  rowsAsArray: false // Return objects instead of arrays
 });
 
 /**
@@ -48,6 +67,97 @@ const testConnection = async (retries = 5, delay = 2000) => {
 };
 
 /**
+ * Monitor connection pool status
+ * Logs connection pool statistics for debugging
+ */
+const monitorConnections = () => {
+  setInterval(() => {
+    try {
+      const poolStats = {
+        totalConnections: pool.pool?._allConnections?.length || 0,
+        freeConnections: pool.pool?._freeConnections?.length || 0,
+        acquiringConnections: pool.pool?._acquiringConnections?.length || 0,
+        queuedRequests: pool.pool?._connectionQueue?.length || 0
+      };
+      
+      console.log('📊 Connection Pool Stats:', poolStats);
+      
+      // Warn if approaching connection limit
+      if (poolStats.totalConnections > 1) {
+        console.warn('⚠️ High connection usage detected:', poolStats);
+      }
+    } catch (error) {
+      console.log('📊 Connection monitoring temporarily unavailable:', error.message);
+    }
+  }, 60000); // Check every 60 seconds (less frequent)
+};
+
+/**
+ * Gracefully close all connections in the pool
+ * Used during server shutdown or when resetting connections
+ */
+const closePool = async () => {
+  try {
+    console.log('🔄 Closing database connection pool...');
+    await pool.end();
+    console.log('✅ Database connection pool closed');
+  } catch (error) {
+    console.error('❌ Error closing connection pool:', error.message);
+  }
+};
+
+/**
+ * Safe database query wrapper with automatic connection management
+ * Ensures connections are properly released even on errors
+ */
+const safeQuery = async (query, params = []) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const [results] = await connection.execute(query, params);
+    return results;
+  } catch (error) {
+    console.error('Database query error:', error.message);
+    throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
+};
+
+/**
+ * Safe database query wrapper for multiple queries
+ * Executes multiple queries in a transaction with proper connection management
+ */
+const safeTransaction = async (queries) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    
+    const results = [];
+    for (const { query, params = [] } of queries) {
+      const [result] = await connection.execute(query, params);
+      results.push(result);
+    }
+    
+    await connection.commit();
+    return results;
+  } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
+    console.error('Database transaction error:', error.message);
+    throw error;
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
+};
+
+/**
  * Initialize database tables
  * Creates necessary tables if they don't exist
  */
@@ -60,6 +170,7 @@ const initializeTables = async () => {
         firebase_uid VARCHAR(255) UNIQUE NOT NULL,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
+        photo_url VARCHAR(500) DEFAULT NULL,
         role ENUM('student', 'teacher') NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -72,7 +183,9 @@ const initializeTables = async () => {
         profile_id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         college_name VARCHAR(255),
-        profile_picture_url VARCHAR(500),
+        employee_id VARCHAR(50) DEFAULT NULL,
+        contact_number VARCHAR(20) DEFAULT NULL,
+        profile_picture_url LONGTEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -87,7 +200,8 @@ const initializeTables = async () => {
         year VARCHAR(50),
         subject VARCHAR(255),
         batch_name VARCHAR(100),
-        profile_picture_url VARCHAR(500),
+        roll_number VARCHAR(50) DEFAULT NULL,
+        profile_picture_url LONGTEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -103,7 +217,8 @@ const initializeTables = async () => {
         college_name VARCHAR(255) NOT NULL,
         description TEXT,
         password VARCHAR(255) NOT NULL,
-        profile_image VARCHAR(500),
+        icon_image LONGTEXT DEFAULT NULL,
+        cover_image LONGTEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (teacher_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -133,6 +248,7 @@ const initializeTables = async () => {
         content TEXT NOT NULL,
         file_url VARCHAR(500) DEFAULT NULL,
         code_sandbox_link VARCHAR(500) DEFAULT NULL,
+        code_language VARCHAR(50) DEFAULT NULL,
         status ENUM('pending', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -145,12 +261,88 @@ const initializeTables = async () => {
       )
     `;
 
+    // Create announcements table for batch announcements
+    const createAnnouncementsTable = `
+      CREATE TABLE IF NOT EXISTS announcements (
+        announcement_id INT AUTO_INCREMENT PRIMARY KEY,
+        batch_id INT NOT NULL,
+        teacher_id INT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE,
+        FOREIGN KEY (teacher_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        INDEX idx_announcements_batch_id (batch_id),
+        INDEX idx_announcements_created_at (created_at)
+      )
+    `;
+
+    // Create announcement_reads table to track which students have read announcements
+    const createAnnouncementReadsTable = `
+      CREATE TABLE IF NOT EXISTS announcement_reads (
+        read_id INT AUTO_INCREMENT PRIMARY KEY,
+        announcement_id INT NOT NULL,
+        student_id INT NOT NULL,
+        read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (announcement_id) REFERENCES announcements(announcement_id) ON DELETE CASCADE,
+        FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        UNIQUE KEY unique_announcement_student (announcement_id, student_id),
+        INDEX idx_announcement_reads_announcement_id (announcement_id),
+        INDEX idx_announcement_reads_student_id (student_id)
+      )
+    `;
+
+    // Create notifications table for teacher notifications
+    const createNotificationsTable = `
+      CREATE TABLE IF NOT EXISTS notifications (
+        notification_id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT NOT NULL,
+        student_id INT NOT NULL,
+        batch_id INT NOT NULL,
+        submission_id INT DEFAULT NULL,
+        type ENUM('submission', 'announcement', 'batch_join') NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (teacher_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE,
+        FOREIGN KEY (submission_id) REFERENCES submissions(submission_id) ON DELETE CASCADE,
+        INDEX idx_notifications_teacher_id (teacher_id),
+        INDEX idx_notifications_created_at (created_at),
+        INDEX idx_notifications_is_read (is_read),
+        INDEX idx_notifications_type (type)
+      )
+    `;
+
+    // Create notification settings table for email preferences
+    const createNotificationSettingsTable = `
+      CREATE TABLE IF NOT EXISTS notification_settings (
+        setting_id INT AUTO_INCREMENT PRIMARY KEY,
+        teacher_id INT NOT NULL,
+        email_notifications BOOLEAN DEFAULT TRUE,
+        submission_notifications BOOLEAN DEFAULT TRUE,
+        announcement_notifications BOOLEAN DEFAULT TRUE,
+        batch_join_notifications BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (teacher_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        UNIQUE KEY unique_teacher_settings (teacher_id)
+      )
+    `;
+
     await pool.execute(createUsersTable);
     await pool.execute(createTeacherProfilesTable);
     await pool.execute(createStudentProfilesTable);
     await pool.execute(createBatchesTable);
     await pool.execute(createBatchMembersTable);
     await pool.execute(createSubmissionsTable);
+    await pool.execute(createAnnouncementsTable);
+    await pool.execute(createAnnouncementReadsTable);
+    await pool.execute(createNotificationsTable);
+    await pool.execute(createNotificationSettingsTable);
 
     console.log('✅ Database tables initialized successfully');
   } catch (error) {
@@ -162,5 +354,9 @@ const initializeTables = async () => {
 module.exports = {
   pool,
   testConnection,
-  initializeTables
+  initializeTables,
+  monitorConnections,
+  closePool,
+  safeQuery,
+  safeTransaction
 };

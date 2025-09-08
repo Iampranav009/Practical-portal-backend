@@ -1,4 +1,6 @@
 const { pool } = require('../db/connection');
+const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
+const { getTeacherNotifications: getTeacherNotificationsData } = require('../utils/db-utils');
 const { sendEmailNotification } = require('../utils/emailService');
 
 /**
@@ -25,6 +27,16 @@ const getTeacherNotifications = async (req, res) => {
       });
     }
 
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
+
     // Build query conditions
     let whereConditions = ['n.teacher_id = ?'];
     let queryParams = [teacherId];
@@ -42,51 +54,9 @@ const getTeacherNotifications = async (req, res) => {
 
     const whereClause = whereConditions.join(' AND ');
 
-    // Get total count for pagination
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM notifications n
-      WHERE ${whereClause}
-    `;
-    const [countResult] = await pool.execute(countQuery, queryParams);
-    const total = countResult[0].total;
-
-    // Calculate pagination
-    const offset = (page - 1) * limit;
-    const totalPages = Math.ceil(total / limit);
-
-    // Get notifications with student and batch information
-    const notificationsQuery = `
-      SELECT 
-        n.notification_id as id,
-        n.type,
-        n.title,
-        n.message as content,
-        n.is_read,
-        n.created_at as timestamp,
-        n.submission_id,
-        n.batch_id,
-        b.name as batch_name,
-        u.name as student_name,
-        u.email as student_email,
-        sp.roll_number,
-        sp.profile_picture_url as student_avatar,
-        CASE 
-          WHEN n.created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) THEN CONCAT(TIMESTAMPDIFF(MINUTE, n.created_at, NOW()), ' minutes ago')
-          WHEN n.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN CONCAT(TIMESTAMPDIFF(HOUR, n.created_at, NOW()), ' hours ago')
-          WHEN n.created_at > DATE_SUB(NOW(), INTERVAL 7 DAY) THEN CONCAT(TIMESTAMPDIFF(DAY, n.created_at, NOW()), ' days ago')
-          ELSE DATE_FORMAT(n.created_at, '%W %l:%i %p')
-        END as timeAgo
-      FROM notifications n
-      JOIN users u ON n.student_id = u.user_id
-      JOIN batches b ON n.batch_id = b.batch_id
-      LEFT JOIN student_profiles sp ON u.user_id = sp.user_id
-      WHERE ${whereClause}
-      ORDER BY n.created_at DESC
-      LIMIT ? OFFSET ?
-    `;
-
-    const [notifications] = await pool.execute(notificationsQuery, [...queryParams, parseInt(limit), offset]);
+    // Use the safe query function with retry logic
+    const result = await getTeacherNotificationsData(teacherId, page, limit);
+    const { notifications, total, totalPages } = result;
 
     // Format notifications for frontend
     const formattedNotifications = notifications.map(notification => ({

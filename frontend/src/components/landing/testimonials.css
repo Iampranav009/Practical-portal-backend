@@ -1,9 +1,0 @@
-/* Testimonials scrollbar styles */
-.testimonials-scroll {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.testimonials-scroll::-webkit-scrollbar {
-  display: none;
-}

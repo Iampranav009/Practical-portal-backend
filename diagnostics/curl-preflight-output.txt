@@ -1,0 +1,2 @@
+Paste raw curl -i OPTIONS output here from both Render shell and local machine, with timestamps.
+

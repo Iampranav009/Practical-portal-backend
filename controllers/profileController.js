@@ -1,4 +1,5 @@
-const { pool } = require('../db/connection');
+const { executeQuery, isDatabaseAvailable, executeTransaction } = require('../utils/enhanced-db-connection');
+const { getUserProfile } = require('../utils/db-utils');
 
 /**
  * Profile Controller
@@ -14,11 +15,18 @@ const getProfile = async (req, res) => {
   try {
     const { userId, role } = req.user; // From JWT middleware
 
-    // Get basic user information
-    const [users] = await pool.execute(
-      'SELECT user_id, name, email, role FROM users WHERE user_id = ?',
-      [userId]
-    );
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
+
+    // Get user profile with retry logic
+    const users = await getUserProfile(userId);
 
     if (users.length === 0) {
       return res.status(404).json({
@@ -29,20 +37,20 @@ const getProfile = async (req, res) => {
 
     const user = users[0];
 
-    // Get role-specific profile data
+    // Get role-specific profile data using robust connection
     let profileData = {};
     if (role === 'teacher') {
-      const [teacherProfile] = await pool.execute(
+      const teacherProfile = await executeQuery(
         'SELECT college_name, profile_picture_url, contact_number FROM teacher_profiles WHERE user_id = ?',
         [userId]
       );
-      profileData = teacherProfile[0] || {};
+      profileData = teacherProfile?.[0] || {};
     } else {
-      const [studentProfile] = await pool.execute(
+      const studentProfile = await executeQuery(
         'SELECT year, subject, batch_name, roll_number, profile_picture_url FROM student_profiles WHERE user_id = ?',
         [userId]
       );
-      profileData = studentProfile[0] || {};
+      profileData = studentProfile?.[0] || {};
     }
 
     res.json({
@@ -55,6 +63,16 @@ const getProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Get profile error:', error);
+    
+    // Handle specific database errors
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again in a moment.',
+        retryAfter: 30
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -71,11 +89,18 @@ const updateProfile = async (req, res) => {
     const { userId, role } = req.user; // From JWT middleware
     const updates = req.body;
 
-    // Start transaction
-    const connection = await pool.getConnection();
-    await connection.beginTransaction();
+    // Check if database is available
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'DATABASE_UNAVAILABLE'
+      });
+    }
 
-    try {
+    // Use enhanced database connection with transaction
+    await executeTransaction(async (connection) => {
       // Update basic user information if provided (email is not editable)
       if (updates.name) {
         await connection.execute(
@@ -142,23 +167,25 @@ const updateProfile = async (req, res) => {
           );
         }
       }
+    });
 
-      await connection.commit();
-      connection.release();
-
-      res.json({
-        success: true,
-        message: 'Profile updated successfully'
-      });
-
-    } catch (error) {
-      await connection.rollback();
-      connection.release();
-      throw error;
-    }
+    res.json({
+      success: true,
+      message: 'Profile updated successfully'
+    });
 
   } catch (error) {
     console.error('Update profile error:', error);
+    
+    // Handle specific database errors
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'PROTOCOL_CONNECTION_LOST') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again in a moment.',
+        retryAfter: 30
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
