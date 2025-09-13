@@ -1,6 +1,6 @@
 # Railway deployment configuration using Nixpacks
 [phases.setup]
-nixPkgs = ["nodejs", "npm"]
+nixPkgs = ["nodejs"]
 
 [phases.install]
 cmds = ["npm ci --only=production"]
