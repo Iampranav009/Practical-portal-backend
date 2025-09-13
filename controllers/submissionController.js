@@ -1,5 +1,4 @@
-const { pool } = require('../db/connection');
-const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
+const { pool, executeQuery, isDatabaseAvailable } = require('../utils/database');
 
 /**
  * Submission Controller

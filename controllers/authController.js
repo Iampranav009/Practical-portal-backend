@@ -1,5 +1,5 @@
-const { pool } = require('../db/connection');
-const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
+// Use unified database facade for consistent access
+const { executeQuery, isDatabaseAvailable, pool } = require('../utils/database');
 const jwt = require('jsonwebtoken');
 
 /**
@@ -77,10 +77,14 @@ const registerUser = async (req, res) => {
     }
 
     // Generate JWT token for backend API access
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ success: false, message: 'Server misconfiguration: JWT secret missing' });
+    }
     const token = jwt.sign(
       { userId, firebaseUid, role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '7d' }
+      jwtSecret,
+      { expiresIn: '24h' }
     );
 
     res.status(201).json({
@@ -146,10 +150,14 @@ const getUserByFirebaseUid = async (req, res) => {
     const user = users[0];
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ success: false, message: 'Server misconfiguration: JWT secret missing' });
+    }
     const token = jwt.sign(
       { userId: user.user_id, firebaseUid: user.firebase_uid, role: user.role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '7d' }
+      jwtSecret,
+      { expiresIn: '24h' }
     );
 
     res.json({
@@ -244,10 +252,14 @@ const googleSignIn = async (req, res) => {
     }
 
     // Generate JWT token for backend API access
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ success: false, message: 'Server misconfiguration: JWT secret missing' });
+    }
     const token = jwt.sign(
       { userId, firebaseUid, role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '7d' }
+      jwtSecret,
+      { expiresIn: '24h' }
     );
 
     // Set auth token as HTTP-only cookie for security
@@ -387,10 +399,14 @@ const emailSignIn = async (req, res) => {
     }
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ success: false, message: 'Server misconfiguration: JWT secret missing' });
+    }
     const token = jwt.sign(
       { userId: user.user_id, firebaseUid: user.firebase_uid, role: user.role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '7d' }
+      jwtSecret,
+      { expiresIn: '24h' }
     );
 
     // Set auth token as HTTP-only cookie for security

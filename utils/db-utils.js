@@ -1,4 +1,4 @@
-const { pool, safeQuery } = require('../db/connection');
+const { executeQuery, pool } = require('../utils/database');
 
 /**
  * Database utility functions for safe query execution
@@ -17,7 +17,7 @@ const executeWithRetry = async (query, params = [], maxRetries = 3) => {
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await safeQuery(query, params);
+      return await executeQuery(query, params);
     } catch (error) {
       lastError = error;
       
@@ -135,7 +135,7 @@ const getBatchSubmissions = async (batchId, page = 1, limit = 20) => {
 const checkConnectionHealth = async () => {
   try {
     // Use the robust connection approach
-    const { isDatabaseAvailable } = require('./robust-db-connection');
+    const { isDatabaseAvailable } = require('../utils/database');
     const isHealthy = await isDatabaseAvailable();
     
     if (isHealthy) {

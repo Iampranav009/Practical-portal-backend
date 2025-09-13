@@ -2,11 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-// Enhanced database connection
+// Unified database facade (single source of truth)
 const { 
   initializePool, 
   executeQuery, 
@@ -15,8 +16,11 @@ const {
   getConnectionStatus, 
   closePool, 
   healthCheck,
-  resetCircuitBreaker 
-} = require('./utils/enhanced-db-connection');
+  resetCircuitBreaker,
+  testConnection,
+  testBasicConnection,
+  testSSLConnection
+} = require('./utils/database');
 
 // Monitoring and logging
 const { 
@@ -31,42 +35,29 @@ const {
  * Ensures all critical environment variables are set before starting the server
  */
 const validateEnvironment = () => {
-  // Check for both new and old environment variable names
   const requiredEnvVars = [
+    'NODE_ENV',
     'JWT_SECRET',
-    'DB_HOST',
-    'DB_USER', 
-    'DB_PASSWORD',
-    'DB_NAME'
+    'DATABASE_HOST',
+    'DATABASE_USER',
+    'DATABASE_PASSWORD',
+    'DATABASE_NAME',
+    'FRONTEND_URL',
+    'CORS_ORIGIN'
   ];
 
-  const missingVars = requiredEnvVars.filter(envVar => {
-    // Check if the new variable exists, or if the old variable exists as fallback
-    const newVar = process.env[envVar];
-    const oldVar = process.env[envVar.replace('DB_', 'DATABASE_')];
-    return !newVar && !oldVar;
-  });
-  
-  if (missingVars.length > 0) {
-    console.warn('⚠️ Missing required environment variables:');
-    missingVars.forEach(envVar => {
-      console.warn(`   - ${envVar} (or ${envVar.replace('DB_', 'DATABASE_')})`);
-    });
-    console.warn('\n💡 Server will start in limited mode without database features.');
-    console.warn('💡 Please check your .env file and ensure all required variables are set.');
-    console.warn('💡 You can use either the new format (DB_*) or old format (DATABASE_*)');
-    return false; // Don't exit, just return false
+  const missing = requiredEnvVars.filter((key) => !process.env[key]);
+  if (missing.length) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
-  
-  console.log('✅ All required environment variables are set');
+
   return true;
 };
 
-// Validate environment variables before proceeding
-const envValid = validateEnvironment();
+// Validate environment variables before proceeding (fail-fast)
+validateEnvironment();
 
-const { testConnection, initializeTables, monitorConnections } = require('./db/connection');
-const { initializeDatabaseWithCleanup } = require('./utils/connection-reset');
+// Legacy initialization removed after DB consolidation
 const { apiRateLimit, setSecurityHeaders, sanitizeInput } = require('./middleware/validation');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
@@ -92,11 +83,11 @@ app.set('trust proxy', 1);
 // ROBUST CORS CONFIGURATION - Clean and Professional
 console.log('🔧 Initializing robust CORS configuration...');
 
-// Define allowed origins (exactly as specified - no trailing slashes)
+// Define allowed origins from env
 const allowedOrigins = [
-  'https://practicalportal.vercel.app',
+  (process.env.CORS_ORIGIN || '').replace(/\/$/, ''),
   'http://localhost:3000'
-];
+].filter(Boolean);
 
 console.log('🌐 Allowed CORS origins:', allowedOrigins);
 
@@ -146,32 +137,8 @@ const corsOptions = {
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
+// Remove manual header overrides; rely on cors middleware only
 app.options('*', cors(corsOptions));
-
-// Override CORS headers to ensure exact origin match (no trailing slash)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  if (origin) {
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    
-    // Check if this origin should be allowed
-    if (allowedOrigins.includes(normalizedOrigin) || 
-        (process.env.NODE_ENV === 'development' && normalizedOrigin.includes('localhost'))) {
-      
-      // Override the CORS header to ensure exact match
-      res.header('Access-Control-Allow-Origin', normalizedOrigin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
-      
-      console.log('🔧 CORS override - Origin:', origin, '-> Normalized:', normalizedOrigin);
-    }
-  }
-  
-  next();
-});
 
 // Socket.IO CORS Configuration (matching Express CORS)
 const io = new Server(server, {
@@ -191,7 +158,7 @@ const io = new Server(server, {
       // Check if normalized origin is in allowed list
       if (allowedOrigins.includes(normalizedOrigin)) {
         console.log('✅ Socket.IO allowing origin:', origin, '-> normalized:', normalizedOrigin);
-        return callback(null, normalizedOrigin); // Return normalized origin
+        return callback(null, normalizedOrigin);
       }
       
       // Development mode - allow localhost variations
@@ -269,28 +236,28 @@ app.use((req, res, next) => {
 // Enhanced health check endpoint with comprehensive monitoring
 app.get('/health', async (req, res) => {
   try {
-    const healthStatus = getHealthStatus();
     const dbHealth = await healthCheck();
-    const poolStats = getPoolStats();
-    const connectionStatus = getConnectionStatus();
-    
-    const isHealthy = healthStatus.status === 'healthy' && dbHealth.healthy;
+    const isHealthy = dbHealth.healthy;
     const statusCode = isHealthy ? 200 : 503;
     
-    res.status(statusCode).json({
+    // Minimal payload in production
+    const minimal = {
       success: isHealthy,
-      message: isHealthy ? 'Practical Portal API is running' : 'Service degraded',
-      timestamp: new Date().toISOString(),
-      status: healthStatus.status,
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      monitoring: healthStatus,
-      database: {
-        healthy: dbHealth.healthy,
-        responseTime: dbHealth.responseTime,
-        poolStats: poolStats,
-        connectionStatus: connectionStatus
-      }
+      message: isHealthy ? 'ok' : 'degraded',
+      uptime: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString()
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(statusCode).json(minimal);
+    }
+
+    // Detailed only in non-production
+    res.status(statusCode).json({
+      ...minimal,
+      database: dbHealth,
+      pool: getPoolStats(),
+      connection: getConnectionStatus()
     });
   } catch (error) {
     logger.error('Health check error', { error: error.message });
@@ -327,6 +294,8 @@ app.get('/health/db', async (req, res) => {
 });
 
 // Database diagnostic endpoint
+// Gate diagnostics to non-production only
+if (process.env.NODE_ENV !== 'production') {
 app.get('/health/db/diagnose', async (req, res) => {
   try {
     const { testConnection } = require('./utils/enhanced-db-connection');
@@ -736,52 +705,14 @@ app.post('/health/reset-circuit-breaker', (req, res) => {
     });
   }
 });
+}
 
-// CORS debug endpoint
-app.get('/api/health/cors', (req, res) => {
-  const origin = req.headers.origin;
-  const normalizedOrigin = origin ? origin.replace(/\/$/, '') : null;
-  
-  res.json({
-    success: true,
-    message: 'CORS debug information',
-    timestamp: new Date().toISOString(),
-    request: {
-      origin: origin,
-      normalizedOrigin: normalizedOrigin,
-      method: req.method,
-      path: req.path,
-      userAgent: req.headers['user-agent']
-    },
-    cors: {
-      allowedOrigins: allowedOrigins,
-      isOriginAllowed: origin ? allowedOrigins.includes(normalizedOrigin) : false,
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'Origin',
-        'Access-Control-Request-Method',
-        'Access-Control-Request-Headers'
-      ]
-    },
-    headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers'
-    }
-  });
-});
+// Remove verbose CORS debug endpoint in production build
 
 // Make Socket.IO instance available to routes
 app.set('io', io);
 
-// API Routes - only load if environment is valid
-if (envValid) {
+// API Routes
   // Health/CORS diagnostics
   const healthCorsRouter = require('./routes/healthCors');
   app.use('/api/health', healthCorsRouter);
@@ -793,66 +724,6 @@ if (envValid) {
   app.use('/api/upload', uploadRoutes);
   app.use('/api/announcements', announcementRoutes);
   app.use('/api/notifications', notificationRoutes);
-} else {
-  // Mock endpoints for limited mode
-  app.get('/api/auth/test', (req, res) => {
-    res.json({
-      success: true,
-      message: 'Auth endpoint is working (Limited Mode)',
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.get('/api/auth/user/:firebaseUid', (req, res) => {
-    const { firebaseUid } = req.params;
-    console.log('🔐 Mock user endpoint hit for UID:', firebaseUid);
-    res.json({
-      success: true,
-      message: 'User endpoint is working (Limited Mode)',
-      firebaseUid: firebaseUid,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.post('/api/auth/register', (req, res) => {
-    console.log('🔐 Mock register endpoint hit');
-    res.json({
-      success: true,
-      message: 'Register endpoint is working (Limited Mode)',
-      data: req.body,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.post('/api/auth/google-signin', (req, res) => {
-    console.log('🔐 Mock Google signin endpoint hit');
-    res.json({
-      success: true,
-      message: 'Google signin endpoint is working (Limited Mode)',
-      data: req.body,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.post('/api/auth/signin', (req, res) => {
-    console.log('🔐 Mock signin endpoint hit');
-    res.json({
-      success: true,
-      message: 'Signin endpoint is working (Limited Mode)',
-      data: req.body,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.post('/api/auth/logout', (req, res) => {
-    console.log('🔐 Mock logout endpoint hit');
-    res.json({
-      success: true,
-      message: 'Logout endpoint is working (Limited Mode)',
-      timestamp: new Date().toISOString()
-    });
-  });
-}
 
 // Enhanced Socket.IO connection handling with robust error handling
 io.on('connection', (socket) => {
@@ -1064,60 +935,18 @@ app.use('*', (req, res) => {
  */
 const startServer = async () => {
   try {
-    // If environment variables are missing, start in limited mode
-    if (!envValid) {
-      logger.warn('Starting server in limited mode (no database)', { 
-        missingEnvVars: !envValid 
-      });
-      
-      // Start server in limited mode
-      server.listen(PORT, () => {
-        logger.info('Server started in LIMITED MODE', {
-          port: PORT,
-          mode: 'LIMITED',
-          database: false
-        });
-        console.log(`🚀 Server running on port ${PORT} (LIMITED MODE)`);
-        console.log(`📊 Health check: http://localhost:${PORT}/health`);
-        console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-        console.log(`⚡ Socket.IO enabled for real-time updates`);
-        console.log(`⚠️ Database features disabled - environment variables missing`);
-      });
-      return;
-    }
-
     // Try enhanced database connection test
-    console.log('🔄 Testing enhanced database connection...');
+    console.log('🔄 Testing database connection...');
     const dbAvailable = await isDatabaseAvailable();
     
     if (!dbAvailable) {
       console.log('⚠️ Database not immediately available, starting in fallback mode...');
-      console.log('💡 Database connections will be attempted on-demand');
-      console.log('💡 This is common with free database hosting services');
-      
-      // Start server in fallback mode
-      server.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT} (FALLBACK MODE)`);
-        console.log(`📊 Health check: http://localhost:${PORT}/health`);
-        console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-        console.log(`⚡ Socket.IO enabled for real-time updates`);
-        console.log(`⚠️ Database features will be attempted on-demand`);
-        console.log(`💡 Server will continue to run and attempt database connections when needed`);
-      });
-      return;
+      throw new Error('Database unavailable at startup');
     }
     
     console.log('✅ Enhanced database connection successful');
     
-    // Initialize database tables using the old connection for compatibility
-    try {
-      const { initializeTables } = require('./db/connection');
-      await initializeTables();
-      console.log('✅ Database tables initialized');
-    } catch (error) {
-      console.log('⚠️ Database table initialization failed, but server will continue');
-      console.log('💡 Tables will be created when first accessed');
-    }
+    // Proceed without legacy table initialization
     
     // Start server with Socket.IO support
     server.listen(PORT, () => {
@@ -1131,16 +960,7 @@ const startServer = async () => {
     
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
-    console.log('🔄 Starting server in limited mode due to error...');
-    
-    // Start server in limited mode even if there's an error
-    server.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT} (ERROR RECOVERY MODE)`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-      console.log(`⚡ Socket.IO enabled for real-time updates`);
-      console.log(`⚠️ Database features disabled due to error`);
-    });
+    process.exit(1);
   }
 };
 
@@ -1169,10 +989,15 @@ const gracefulShutdown = async (signal) => {
     
     // Close old database connections for compatibility
     try {
-      const { pool } = require('./db/connection');
-      if (pool) {
-        await pool.end();
-        console.log('✅ Legacy database connections closed');
+      const legacyPath = path.join(__dirname, 'db', 'connection.js');
+      if (fs.existsSync(legacyPath)) {
+        const { pool } = require('./db/connection');
+        if (pool && typeof pool.end === 'function') {
+          await pool.end();
+          console.log('✅ Legacy database connections closed');
+        }
+      } else {
+        console.log('ℹ️ No legacy database module found; skipping legacy pool close');
       }
     } catch (error) {
       console.error('⚠️ Error closing legacy database pool:', error.message);

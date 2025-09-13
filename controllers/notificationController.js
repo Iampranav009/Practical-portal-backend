@@ -1,5 +1,4 @@
-const { pool } = require('../db/connection');
-const { executeQuery, isDatabaseAvailable } = require('../utils/enhanced-db-connection');
+const { pool, executeQuery, isDatabaseAvailable } = require('../utils/database');
 const { getTeacherNotifications: getTeacherNotificationsData } = require('../utils/db-utils');
 const { sendEmailNotification } = require('../utils/emailService');
 

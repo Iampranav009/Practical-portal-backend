@@ -1,4 +1,4 @@
-const { pool } = require('../db/connection');
+const { pool } = require('../utils/database');
 const bcrypt = require('bcryptjs');
 
 /**

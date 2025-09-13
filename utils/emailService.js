@@ -97,7 +97,7 @@ const sendEmailNotification = async (notificationData) => {
  */
 const getTeacherEmail = async (teacherId) => {
   try {
-    const { pool } = require('../db/connection');
+    const { pool } = require('../utils/database');
     const query = 'SELECT email FROM users WHERE user_id = ? AND role = "teacher"';
     const [result] = await pool.execute(query, [teacherId]);
     
