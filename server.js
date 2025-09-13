@@ -209,6 +209,28 @@ app.use('/api', (req, res, next) => {
   }
 });
 
+// Basic API info endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Practical Portal API',
+    version: '1.0.0',
+    status: 'operational',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth',
+      profile: '/api/profile',
+      batches: '/api/batches',
+      submissions: '/api/submissions',
+      dashboard: '/api/dashboard',
+      upload: '/api/upload',
+      announcements: '/api/announcements',
+      notifications: '/api/notifications',
+      health: '/health'
+    }
+  });
+});
+
 // Input sanitization for all routes
 app.use(sanitizeInput);
 
@@ -257,7 +279,19 @@ app.get('/health', async (req, res) => {
       ...minimal,
       database: dbHealth,
       pool: getPoolStats(),
-      connection: getConnectionStatus()
+      connection: getConnectionStatus(),
+      availableEndpoints: {
+        basic: '/health',
+        database: '/health/db',
+        diagnose: '/health/db/diagnose',
+        basicTest: '/health/db/basic',
+        socketTest: '/health/db/sockettest',
+        sslTest: '/health/db/ssl',
+        envInfo: '/health/env',
+        comprehensive: '/health/db/comprehensive',
+        resetCircuitBreaker: '/health/reset-circuit-breaker',
+        apiInfo: '/api'
+      }
     });
   } catch (error) {
     logger.error('Health check error', { error: error.message });
@@ -467,6 +501,14 @@ app.get('/health/db/ssl', async (req, res) => {
 
 // Enhanced environment validation endpoint
 app.get('/health/env', (req, res) => {
+  // Don't expose environment details in production
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      message: 'Environment info not available in production'
+    });
+  }
+
   const envVars = {
     DB_HOST: process.env.DB_HOST || process.env.DATABASE_HOST || 'NOT_SET',
     DB_PORT: process.env.DB_PORT || process.env.DATABASE_PORT || 'NOT_SET',
@@ -500,6 +542,14 @@ app.get('/health/env', (req, res) => {
 // Comprehensive diagnostic endpoint
 app.get('/health/db/comprehensive', async (req, res) => {
   try {
+    // Don't expose comprehensive diagnostics in production
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({
+        success: false,
+        message: 'Comprehensive diagnostics not available in production'
+      });
+    }
+
     const { testBasicConnection, testSSLConnection } = require('./utils/enhanced-db-connection');
     const net = require('net');
     const dns = require('dns');
@@ -695,6 +745,26 @@ app.post('/health/reset-circuit-breaker', (req, res) => {
       success: true,
       message: 'Circuit breaker reset successfully',
       timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset circuit breaker',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
+// Circuit breaker reset endpoint (GET method for easier testing)
+app.get('/health/reset-circuit-breaker', (req, res) => {
+  try {
+    resetCircuitBreaker();
+    res.json({
+      success: true,
+      message: 'Circuit breaker reset successfully',
+      timestamp: new Date().toISOString(),
+      method: 'GET'
     });
   } catch (error) {
     res.status(500).json({

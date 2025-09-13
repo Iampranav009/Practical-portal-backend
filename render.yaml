@@ -10,14 +10,16 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: DB_HOST
+      - key: DATABASE_HOST
         value: your-db-host
-      - key: DB_USER
+      - key: DATABASE_USER
         value: your-db-user
-      - key: DB_PASSWORD
+      - key: DATABASE_PASSWORD
         value: your-db-password
-      - key: DB_NAME
+      - key: DATABASE_NAME
         value: your-db-name
+      - key: DATABASE_PORT
+        value: 3306
       - key: JWT_SECRET
         value: your-jwt-secret
       - key: FIREBASE_PROJECT_ID
@@ -29,4 +31,6 @@ services:
       - key: EMAIL_SERVICE_API_KEY
         value: your-email-api-key
       - key: FRONTEND_URL
-        value: https://your-frontend-url.vercel.app
+        value: https://practicalportal.vercel.app
+      - key: CORS_ORIGIN
+        value: https://practicalportal.vercel.app
