@@ -257,24 +257,24 @@ const createPool = () => {
     database: process.env.DB_NAME || process.env.DATABASE_NAME || 'practical_portal',
     port: parseInt(process.env.DB_PORT || process.env.DATABASE_PORT || '3306'),
     
-    // Connection pool settings - very conservative for stability
+    // Connection pool settings - optimized for Railway
     waitForConnections: true,
-    connectionLimit: 5, // Very small pool for better stability
+    connectionLimit: process.env.RAILWAY_ENVIRONMENT ? 10 : 5, // More connections on Railway
     queueLimit: 0,
     
-    // Connection timeout settings - configurable for debugging
-    connectTimeout: debugTimeouts ? 20000 : 10000, // 20s for debug, 10s normal
+    // Connection timeout settings - optimized for Railway
+    connectTimeout: debugTimeouts ? 20000 : (process.env.RAILWAY_ENVIRONMENT ? 15000 : 10000),
     // Note: acquireTimeout is not a valid option in mysql2/promise
     
-    // Connection cleanup settings - very aggressive
-    idleTimeout: 60000, // 1 minute - very short idle time
-    maxIdle: 2, // Very few idle connections
+    // Connection cleanup settings - balanced for Railway
+    idleTimeout: process.env.RAILWAY_ENVIRONMENT ? 300000 : 60000, // 5min on Railway, 1min local
+    maxIdle: process.env.RAILWAY_ENVIRONMENT ? 5 : 2, // More idle connections on Railway
     
     // Keep-alive settings optimized for paid hosting
     keepAliveInitialDelay: 0,
     enableKeepAlive: true,
     
-    // SSL configuration for production (Hostinger supports SSL)
+    // SSL configuration for production (Railway requires SSL)
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     
     // Additional settings for stability and performance
