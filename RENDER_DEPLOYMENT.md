@@ -6,17 +6,19 @@ This guide will help you deploy the Practical Portal backend API to Render.
 
 1. A GitHub repository with your backend code
 2. A Render account
-3. A MySQL database (can be created on Render or use external service)
+3. A MySQL database (using current Hostinger MySQL)
 
-## Step 1: Create a MySQL Database on Render
+## Step 1: Deploy the Backend Service
+
+### Option A: Using render.yaml (Recommended)
 
 1. Go to your Render dashboard
-2. Click "New +" and select "PostgreSQL" (or MySQL if available)
-3. Choose "Free" plan
-4. Name your database (e.g., `practical-portal-db`)
-5. Note down the connection details
+2. Click "New +" and select "Blueprint"
+3. Connect your GitHub repository
+4. Select the `backend` folder as the root directory
+5. Render will automatically detect and use the `render.yaml` configuration
 
-## Step 2: Deploy the Backend Service
+### Option B: Manual Configuration
 
 1. Go to your Render dashboard
 2. Click "New +" and select "Web Service"
@@ -24,49 +26,63 @@ This guide will help you deploy the Practical Portal backend API to Render.
 4. Choose the repository and branch (main)
 5. Configure the service:
 
-### Service Configuration
+#### Service Configuration
 
 - **Name**: `practical-portal-backend`
 - **Environment**: `Node`
-- **Build Command**: `npm install`
+- **Build Command**: `npm ci --only=production`
 - **Start Command**: `npm start`
 - **Plan**: Free
+- **Health Check Path**: `/health`
 
 ### Environment Variables
 
-Add these environment variables in the Render dashboard:
+Add these environment variables in the Render dashboard (or use the `render.env.example` file as reference):
 
 ```
 NODE_ENV=production
 PORT=10000
-DB_HOST=your-database-host-from-render
-DB_USER=your-database-user-from-render
-DB_PASSWORD=your-database-password-from-render
-DB_NAME=your-database-name-from-render
-JWT_SECRET=your-super-secure-jwt-secret-key
-FIREBASE_PROJECT_ID=your-firebase-project-id
-FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nyour-firebase-private-key\n-----END PRIVATE KEY-----\n
-FIREBASE_CLIENT_EMAIL=your-firebase-client-email@your-project.iam.gserviceaccount.com
-EMAIL_SERVICE_API_KEY=your-email-service-api-key
-FRONTEND_URL=https://your-frontend-app.vercel.app
-CORS_ORIGIN=https://your-frontend-app.vercel.app
-CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-CLOUDINARY_API_KEY=your-cloudinary-api-key
-CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+FRONTEND_URL=https://practicalportal.vercel.app
+CORS_ORIGIN=https://practicalportal.vercel.app
+DATABASE_HOST=srv1741.hstgr.io
+DATABASE_PORT=3306
+DATABASE_USER=u344397447_classroom
+DATABASE_PASSWORD=Classroom@9156332109
+DATABASE_NAME=u344397447_classroom
+JWT_SECRET=4f0f8f658992022c6d319408d944c8cda7895d513849adef624db3ffc5d455d7e4824592a08d85e439e26566e8bf35e63
+JWT_EXPIRES_IN=7d
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDUVWzkc42EX+41\nHZomEMlhbuPiKxhyZfeH9TY+CzV1QM71LyklDp/QhSypvLy52CAhCNYP/96JcZN6\nA06h1hGWlz1qfD6XPJnuqNZAgfYU1Gfc2OPwzgoZobIxpsFZb5hEONtsMQzLeiVl\nL/IihpKHDpmz0gN5WmSKgHTb9518+mPtW60LXeFmnHoPA+LjPTpJTgp/s1aKDe+M\neXZghhILFFDY0NM/fLahm1l8XZQsitbFCUlkCcBCCYuHjxG2ofiJnRpFDwcJCGnI\nEYHMu1C5lcxV60atVWndMkHOPBaqO2uhQ5l6Y/98Hvaf7UVfBTmQJgH9EpyUknnm\nppKsLgnvAgMBAAECggEAFHEPmq7FNl6bQDcpWqDNwmOP7NDZTv93ZSS7pB16zV7/\n4vriAH9NQ3XkEYiUuA+RMvJMKXN9/nLAupkMPj2tqSHGTTTI5yZzwKuLH4q4y33n\nbIuKO5Sabv1HenWOB7OGpTVpanEOb53CxosRyeEgGisoVkzRqM0wVg/ShZr"
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-fbsvc@classroom-5b5c6.iam.gserviceaccount.com
+FIREBASE_PROJECT_ID=classroom-5b5c6
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyC32EyY-0xUaKDDuyyPesqL443JX0Goh8s
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=classroom-5b5c6.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=classroom-5b5c6
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=classroom-5b5c6.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=143853250457
+NEXT_PUBLIC_FIREBASE_APP_ID=1:143853250457:web:eeb35eb7689f6394e51508
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-NENN2MGR4Y
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=pportal.notification@gmail.com
+SMTP_PASS=xvuh unfy macs ptow
+DB_RETRY_ATTEMPTS=3
+DB_RETRY_DELAY=2000
+DEBUG_DB_TIMEOUT=false
 ```
 
-## Step 3: Deploy
+## Step 2: Deploy
 
-1. Click "Create Web Service"
+1. Click "Create Web Service" (for manual) or "Apply" (for Blueprint)
 2. Wait for the deployment to complete
 3. Note the service URL (e.g., `https://practical-portal-backend.onrender.com`)
 
-## Step 4: Test the Deployment
+## Step 3: Test the Deployment
 
 1. Visit `https://your-service-url.onrender.com/health`
 2. You should see a JSON response indicating the API is running
+3. Test database connectivity: `https://your-service-url.onrender.com/health/db`
 
-## Step 5: Update Frontend Configuration
+## Step 4: Update Frontend Configuration
 
 Update your frontend's API base URL to point to your Render service:
 
@@ -74,6 +90,15 @@ Update your frontend's API base URL to point to your Render service:
 // In your frontend environment variables
 NEXT_PUBLIC_API_URL=https://your-service-url.onrender.com/api
 ```
+
+## Migration from Railway
+
+If you're migrating from Railway:
+
+1. **Update Environment Variables**: Copy all environment variables from Railway to Render
+2. **Update Frontend**: Change the API URL in your frontend from Railway to Render
+3. **Test Thoroughly**: Ensure all endpoints work correctly
+4. **Monitor**: Keep an eye on logs and performance during the transition
 
 ## Troubleshooting
 
@@ -102,24 +127,28 @@ NEXT_PUBLIC_API_URL=https://your-service-url.onrender.com/api
 
 ## Environment Variables Reference
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NODE_ENV` | Environment mode | Yes |
-| `PORT` | Server port | Yes |
-| `DB_HOST` | Database host | Yes |
-| `DB_USER` | Database username | Yes |
-| `DB_PASSWORD` | Database password | Yes |
-| `DB_NAME` | Database name | Yes |
-| `JWT_SECRET` | JWT signing secret | Yes |
-| `FIREBASE_PROJECT_ID` | Firebase project ID | Yes |
-| `FIREBASE_PRIVATE_KEY` | Firebase private key | Yes |
-| `FIREBASE_CLIENT_EMAIL` | Firebase client email | Yes |
-| `EMAIL_SERVICE_API_KEY` | Email service API key | No |
-| `FRONTEND_URL` | Frontend application URL | Yes |
-| `CORS_ORIGIN` | CORS origin URL | Yes |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | No |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | No |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | No |
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `NODE_ENV` | Environment mode | Yes | `production` |
+| `PORT` | Server port | Yes | `10000` |
+| `DATABASE_HOST` | Database host | Yes | `srv1741.hstgr.io` |
+| `DATABASE_USER` | Database username | Yes | `u344397447_classroom` |
+| `DATABASE_PASSWORD` | Database password | Yes | `Classroom@9156332109` |
+| `DATABASE_NAME` | Database name | Yes | `u344397447_classroom` |
+| `JWT_SECRET` | JWT signing secret | Yes | `your-secret-key` |
+| `JWT_EXPIRES_IN` | JWT expiration time | Yes | `7d` |
+| `FIREBASE_PROJECT_ID` | Firebase project ID | Yes | `classroom-5b5c6` |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | Firebase private key | Yes | `-----BEGIN PRIVATE KEY-----...` |
+| `FIREBASE_ADMIN_CLIENT_EMAIL` | Firebase client email | Yes | `firebase-adminsdk-...@...iam.gserviceaccount.com` |
+| `FRONTEND_URL` | Frontend application URL | Yes | `https://practicalportal.vercel.app` |
+| `CORS_ORIGIN` | CORS origin URL | Yes | `https://practicalportal.vercel.app` |
+| `SMTP_HOST` | SMTP server host | Yes | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | Yes | `587` |
+| `SMTP_USER` | SMTP username | Yes | `pportal.notification@gmail.com` |
+| `SMTP_PASS` | SMTP password | Yes | `your-app-password` |
+| `DB_RETRY_ATTEMPTS` | Database retry attempts | No | `3` |
+| `DB_RETRY_DELAY` | Database retry delay (ms) | No | `2000` |
+| `DEBUG_DB_TIMEOUT` | Debug database timeout | No | `false` |
 
 ## Security Notes
 
@@ -128,10 +157,28 @@ NEXT_PUBLIC_API_URL=https://your-service-url.onrender.com/api
 3. Regularly rotate API keys and secrets
 4. Monitor your service for unusual activity
 
+## Render vs Railway Comparison
+
+### Render Advantages
+✅ **Free Tier**: More generous free tier with better performance
+✅ **Better Documentation**: Comprehensive guides and examples
+✅ **Blueprint Support**: Infrastructure as code with render.yaml
+✅ **Better Monitoring**: Built-in metrics and alerting
+✅ **Automatic SSL**: SSL certificates managed automatically
+✅ **Custom Domains**: Easy custom domain setup
+✅ **Better Logs**: More detailed logging and debugging
+
+### Railway Advantages
+✅ **Faster Deployments**: Slightly faster build times
+✅ **Better Database Integration**: Native database services
+✅ **Simpler Setup**: Fewer configuration steps
+
 ## Support
 
 If you encounter issues:
-1. Check the Render documentation
-2. Review the service logs
+1. Check the Render documentation: https://render.com/docs
+2. Review the service logs in Render dashboard
 3. Verify all environment variables are set correctly
-4. Test the health endpoint first
+4. Test the health endpoint first: `/health`
+5. Check database connectivity: `/health/db`
+6. Render Community: https://community.render.com
